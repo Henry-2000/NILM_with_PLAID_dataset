@@ -17,7 +17,6 @@ Files are organized as follows:
 * [cnn.py](https://github.com/hsneto/iftex/blob/master/textuais/testes.tex#L60) - include functions for convolutional neural network construction for V-I trajectories classification, once they are available.
 
 Contact e-mail:
-
 hcampaneli@gmail.com
 
 
