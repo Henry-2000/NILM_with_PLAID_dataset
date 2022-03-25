@@ -1,4 +1,4 @@
-# nilm_with_PLAID_dataset
+# NILM with PLAID dataset
 In this repository are available codes for implementation of electrical loads classification and event detection in residential environments using PLAID dataset. It can also work with any high frequency dataset that offers voltage and current signals (from individual and aggregated measurements of appliances), as long as basic editting of data handling (CSV/Metadata files and directories) and parameters (like network and sample frequency) are made.
 
 PLAID dataset is available in [here](https://figshare.com/articles/dataset/PLAID_-_A_Voltage_and_Current_Measurement_Dataset_for_Plug_Load_Appliance_Identification_in_Households/10084619/2) (access date: 21 Mar 2022). Only needs submetered/aggregated and metadata files. Extract/save them on the same folder directory of codes.
