@@ -46,7 +46,7 @@ def filter_harmonics(signal,highest_harmonic_order=None,sample_frequency=30000,g
     # Signal magnitude on frequency domain
     fft_signal_amp=np.abs(fft_signal)
     # Signal phase on frequency domain in radians
-    fft_signal_phase=np.angle(fft_signal)*180/np.pi
+    fft_signal_phase=np.angle(fft_signal)
     # Frequency axes
     freq_axes = np.fft.fftfreq(n, d=dt)
     # Get only the odd harmonic frequencies

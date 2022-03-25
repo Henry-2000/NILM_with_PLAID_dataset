@@ -235,7 +235,6 @@ def construct_harmonics_dict(signal_dict,highest_harmonic_order):
         indices=value.get('indices')   
         current=value.get('current')
         voltage=value.get('voltage')
-
         voltage=voltage[indices[0]:indices[1]]
         current=current[indices[0]:indices[1]]
 

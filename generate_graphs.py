@@ -95,61 +95,61 @@ def generate_graphs_submetered(signal_dict_original,target_appliances=[],filepat
     n_appliances=len(signal_dict)
     for appliance_name in signal_dict:       
         count_progress(n_appliances,count)
-        
-        current=signal_dict[appliance_name]['current']
-        indices=signal_dict[appliance_name]['indices']
-        appliance_type=signal_dict[appliance_name]['appliance_type']
-        current_rms=generate_rms(current,mode='full_cycle')
-        fig1,axes1 = plt.subplots(2,1)
-        fig1 = plt.gcf()
-        fig1.set_size_inches(20, 10)
-        fig1.tight_layout(pad=5.0)
+        if count>=1238:
+            current=signal_dict[appliance_name]['current']
+            indices=signal_dict[appliance_name]['indices']
+            appliance_type=signal_dict[appliance_name]['appliance_type']
+            current_rms=generate_rms(current,mode='full_cycle')
+            fig1,axes1 = plt.subplots(2,1)
+            fig1 = plt.gcf()
+            fig1.set_size_inches(20, 10)
+            fig1.tight_layout(pad=5.0)
 
-        duration=len(current)/sample_frequency
-        time= np.linspace(0,duration,num=int(np.ceil(duration/dt)))
-        
-        plt.grid()
-        plt.sca(axes1[0])
-        plt.title('(a)',fontsize=20,pad=15)
-        axes1[0].plot(time,current,'b',label=f'Corrente - {appliance_name}')
-        axes1[0].plot(time,current_rms,'r',label=f'Corrente RMS - {appliance_name}')
-        plt.axvline(time[indices[0]],0,1,color='g',lw=3)
-        plt.axvline(time[indices[1]-1],0,1,color='g',lw=3)
-        plt.xlabel('Tempo [s]')
-        plt.ylabel('Corrente [A]')
-        plt.xticks(np.arange(0, max(time)+1000*dt,np.around(max(time),1)/20))
-        plt.xlim(0,max(time))
-        axes1[0].legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left', ncol=1, borderaxespad=0.)
-               
-        plt.grid()
-        plt.sca(axes1[1])
-        plt.title('(b)',fontsize=20,pad=15)
-        axes1[1].plot(time[indices[0]:indices[1]],current[indices[0]:indices[1]],'b',label=f'Corrente - {appliance_name}')
-        axes1[1].plot(time[indices[0]:indices[1]],current_rms[indices[0]:indices[1]],'r',label=f'Corrente RMS - {appliance_name}')
-        plt.xlabel('Tempo [s]')
-        plt.ylabel('Corrente [A]')
-        plt.xlim(time[indices[0]],time[indices[1]-1])
-        inf=time[indices[0]]
-        sup=time[indices[1]-1]
-        axes1[1].xaxis.set_major_formatter(FormatStrFormatter('%.3f'))
-        step=((sup-inf)-1000*dt)/10
-        plt.xticks(np.arange(inf, sup+100*dt, step))
-        axes1[1].legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left', ncol=1, borderaxespad=0.)
-        plt.tight_layout()
+            duration=len(current)/sample_frequency
+            time= np.linspace(0,duration,num=int(np.ceil(duration/dt)))
+            
+            plt.grid()
+            plt.sca(axes1[0])
+            plt.title('(a)',fontsize=20,pad=15)
+            axes1[0].plot(time,current,'b',label=f'Corrente - {appliance_name}')
+            axes1[0].plot(time,current_rms,'r',label=f'Corrente RMS - {appliance_name}')
+            plt.axvline(time[indices[0]],0,1,color='g',lw=3)
+            plt.axvline(time[indices[1]-1],0,1,color='g',lw=3)
+            plt.xlabel('Tempo [s]')
+            plt.ylabel('Corrente [A]')
+            plt.xticks(np.arange(0, max(time)+1000*dt,np.around(max(time),1)/20))
+            plt.xlim(0,max(time))
+            axes1[0].legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left', ncol=1, borderaxespad=0.)
+                
+            plt.grid()
+            plt.sca(axes1[1])
+            plt.title('(b)',fontsize=20,pad=15)
+            axes1[1].plot(time[indices[0]:indices[1]],current[indices[0]:indices[1]],'b',label=f'Corrente - {appliance_name}')
+            axes1[1].plot(time[indices[0]:indices[1]],current_rms[indices[0]:indices[1]],'r',label=f'Corrente RMS - {appliance_name}')
+            plt.xlabel('Tempo [s]')
+            plt.ylabel('Corrente [A]')
+            plt.xlim(time[indices[0]],time[indices[1]-1])
+            inf=time[indices[0]]
+            sup=time[indices[1]-1]
+            axes1[1].xaxis.set_major_formatter(FormatStrFormatter('%.3f'))
+            step=((sup-inf)-1000*dt)/10
+            plt.xticks(np.arange(inf, sup+100*dt, step))
+            axes1[1].legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left', ncol=1, borderaxespad=0.)
+            plt.tight_layout()
 
-        if signal_dict[appliance_name]['error_value']==0:
-            if not os.path.exists(filepath + "/valid_graphics/"):                
-                os.makedirs(f"{filepath}/valid_graphics")
-            if not os.path.exists(f"{filepath}/valid_graphics/{appliance_type}"):
-                os.makedirs(f"{filepath}/valid_graphics/{appliance_type}")                
-            plt.savefig(f"{filepath}/valid_graphics/{appliance_type}/{appliance_name}.png") 
-        else:
-            if not os.path.exists(f"{filepath}/error_graphics"):                
-                os.makedirs(f"{filepath}/error_graphics/")
-            if not os.path.exists(f"{filepath}/error_graphics/{appliance_type}"):                
-                os.makedirs(f"{filepath}/error_graphics/{appliance_type}")
-            plt.savefig(f"{filepath}/error_graphics/{appliance_type}/{appliance_name}.png")
-        plt.close(fig1)
+            if signal_dict[appliance_name]['error_value']==0:
+                if not os.path.exists(filepath + "/valid_graphics/"):                
+                    os.makedirs(f"{filepath}/valid_graphics")
+                if not os.path.exists(f"{filepath}/valid_graphics/{appliance_type}"):
+                    os.makedirs(f"{filepath}/valid_graphics/{appliance_type}")                
+                plt.savefig(f"{filepath}/valid_graphics/{appliance_type}/{appliance_name}.png") 
+            else:
+                if not os.path.exists(f"{filepath}/error_graphics"):                
+                    os.makedirs(f"{filepath}/error_graphics/")
+                if not os.path.exists(f"{filepath}/error_graphics/{appliance_type}"):                
+                    os.makedirs(f"{filepath}/error_graphics/{appliance_type}")
+                plt.savefig(f"{filepath}/error_graphics/{appliance_type}/{appliance_name}.png")
+            plt.close(fig1)
         count+=1
 
 def generate_graphs_aggregated(aggregated_dict_original,target_samples=[],filepath=filepath_aggregated,sample_frequency=30000):
@@ -228,10 +228,11 @@ def generate_graphs_frequency_domain(signal_dict_original,harmonic_dict,target_a
     n_appliances=len(signal_dict)
     for appliance_name in signal_dict:       
         count_progress(n_appliances,count)
+        
         current_original=signal_dict[appliance_name]['current']
         indices=signal_dict[appliance_name]['indices']
         appliance_type=signal_dict[appliance_name]['appliance_type']
-       
+    
         n_original=len(current_original)
         duration_original=n_original/sample_frequency
         time_original=np.linspace(0,duration_original,num=int(np.ceil(duration_original/dt)))
@@ -300,7 +301,7 @@ def generate_graphs_frequency_domain(signal_dict_original,harmonic_dict,target_a
         plt.xlabel('Frequency [Hz]',fontsize=12)
         plt.ylabel('Phase I(f) [degrees]',fontsize=12)
         for i in range(highest_harmonic_order):
-            plt.text(freq_axes[indices_harmonics[0][i]],fft_phase_cut_correct[indices_harmonics[0][i]],f"{fft_phase_cut_correct[indices_harmonics[0][i]]:.2f}")
+            plt.text(freq_axes[indices_harmonics[0][i]],fft_phase_cut_correct[indices_harmonics[0][i]]*180/np.pi,f"{fft_phase_cut_correct[indices_harmonics[0][i]]:.2f}")
         plt.grid()
         plt.xticks(np.arange(0,(highest_harmonic_order+1)*grid_frequency,grid_frequency),fontsize=10)
         plt.xlim(0,(highest_harmonic_order+1)*grid_frequency)
@@ -335,19 +336,18 @@ def generate_VI_images(harmonic_dict,filepath=filepath_VI_images,highest_odd_har
             max_current.append(harmonic_dict[appliance_type]['max_current'])
     imax=max(max_current)
     for appliance_type in harmonic_dict:          
-        for appliance_name in harmonic_dict[appliance_type]['appliance']:                        
-            
+        for appliance_name in harmonic_dict[appliance_type]['appliance']:                                    
             mode=0
             odd=0
-            for i in range(2):                   
-                current,voltage=harmonics_selection(harmonic_dict,highest_odd_harmonic_order,appliance_type,appliance_name,i,odd)
+            for i in range(2):                                 
+                current,voltage=harmonics_selection(harmonic_dict,highest_odd_harmonic_order,appliance_type,appliance_name,lag=i,odd=odd)
                 image_saving(harmonic_dict,filepath,appliance_type,appliance_name,voltage,current,low_THD_appliance_type,imax,mode)
-                mode+=1
+                mode+=1 
                 odd+=1
-                current,voltage=harmonics_selection(harmonic_dict,highest_odd_harmonic_order,appliance_type,appliance_name,i,odd)
+                current,voltage=harmonics_selection(harmonic_dict,highest_odd_harmonic_order,appliance_type,appliance_name,lag=i,odd=odd)
                 image_saving(harmonic_dict,filepath,appliance_type,appliance_name,voltage,current,low_THD_appliance_type,imax,mode)
                 mode+=1
-                odd=0
+                odd-=1
                                
             count_progress(n_images,count)                                  
             count+=1
@@ -458,6 +458,7 @@ def image_saving(harmonic_dict,filepath,appliance_type,appliance_name,voltage,cu
     ax.set_prop_cycle(monochrome)
     ax.set_axis_off()
     fig.add_axes(ax)
+
     img=plt.plot(voltage,current) 
 
     if appliance_type in low_THD_appliance_type:               

@@ -32,7 +32,7 @@ def main():
             \n(3) Construct steady samples dictionary\
             \n(4) Construct harmonic dictionary from steady samples\
             \n(5) Generate graphs of submetered data with steady samples (Optional)\
-            \n(6) Generate graphs of submetered data filtered by harmonics in time and frequency domain (Optional)\
+            \n(6) Generate graphs of submetered data with phase and amplitude spectrum (Optional)\
             \n(7) Generate V-I trajectories images\
             \n(8) Construct Convolutional Neural Network for V-I trajectories classification\
             \n\n############ EVENT DETECTION APPROACH ############\

@@ -12,6 +12,8 @@ from sklearn.model_selection import StratifiedKFold
 import matplotlib.pyplot as plt
 from tensorflow.keras.utils import to_categorical
 
+from utilities import count_progress
+
 EPOCHS = 100
 EPOCHS_LENET = 10
 IMG_WIDTH = 128
@@ -65,7 +67,7 @@ def cnn_main(model=None):
         save_summary(complete_model,'VI_lenet')
         tf.keras.utils.plot_model(
             complete_model,
-            to_file=f"{SAVE_DIR}complete_model.png",
+            to_file=f"{SAVE_DIR}/images/complete_model.png",
             show_shapes=True,
             show_dtype=False,
             show_layer_names=True,
@@ -83,18 +85,20 @@ def cnn_main(model=None):
         for i in range(len(x_train)):
             history.append(complete_model.fit(x_train[i], y_train[i], validation_data = (x_test[i], y_test[i]), epochs=EPOCHS))           
             scores.append(complete_model.evaluate(x_test[i], y_test[i], verbose=0))      
-        plot_training_results(model,history,EPOCHS,filename='VI_lenet_training')
+        plot_training_results(model,history,EPOCHS,filename='history_VI_lenet_')
         print(scores)
         save_model(complete_model)
     if ans==3:
         VI_lenet_model=import_model()
-        x_train,y_train,x_test,y_test,le,labels_literal=process_data_VI_Images(k_folds=False) 
-        prediction=VI_lenet_model.predict(x_test[0])
-        prediction_uni=[]
-        label_uni=[]
-        for i in range(len(prediction)):
-            prediction_uni.append(np.argmax([prediction[i]]))
-            label_uni.append(np.argmax([y_test[0][i]]))
+        for i in range(1000):
+            count_progress(1000,i)
+            x_train,y_train,x_test,y_test,le,labels_literal=process_data_VI_Images(k_folds=False) 
+            prediction=VI_lenet_model.predict(x_test[0])
+            prediction_uni=[]
+            label_uni=[]
+            for i in range(len(prediction)):
+                prediction_uni.append(np.argmax([prediction[i]]))
+                label_uni.append(np.argmax([y_test[0][i]]))
         confusionMatrix = tf.math.confusion_matrix(labels=label_uni, predictions=prediction_uni,num_classes=16)
         df_cm = pd.DataFrame(confusionMatrix, index = [i for i in labels_literal],
                   columns = [i for i in labels_literal])
@@ -315,9 +319,9 @@ def plot_training_results(model,history,epochs,filename):
         plt.legend(loc='upper right')
         j+=1
     plt.tight_layout()    
-    if not os.path.exists(f"{SAVE_DIR}/training_history"):
-        os.makedirs(f"{SAVE_DIR}/training_history/")
-    plt.savefig(f"{SAVE_DIR}/training_history/{filename}.png",dpi=128)
+    if not os.path.exists(f"/graphics/training_history"):
+        os.makedirs(f"/graphics/training_history/")
+    plt.savefig(f"{SAVE_DIR}/graphics/training_history/{filename}.png",dpi=128)
 
 if __name__ == "__main__":
     cnn_main()
