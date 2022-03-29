@@ -5,7 +5,7 @@ PLAID dataset is available in [here](https://figshare.com/articles/dataset/PLAID
 
 Related work: 
 
-Files are organized as follows:
+Files content:
 * [main.py](https://github.com/hsneto/iftex/blob/master/textuais/testes.tex#L10) - code that displays the sequence of options for data processing and graphs generation;
 * [process_data.py](https://github.com/hsneto/iftex/blob/master/textuais/testes.tex#L38) - include functions that handle individual and aggregated data and creates dictionaries that helps organizing them;
 * [steady_samples.py](https://github.com/hsneto/iftex/blob/master/textuais/testes.tex#L60) - include functions for selection of stationary signal intervals and RMS generation;
