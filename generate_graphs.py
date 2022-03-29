@@ -60,7 +60,6 @@ def load_data(dataset_file,metadata_file):
     metadata = join(dataset_file,metadata_file)
     f = open(metadata,'r')
     metadata = json.load(f)
-    #print(metadata)
     appliance_dict={}
     for file_number in metadata:
         appliance_dict[metadata[file_number]["appliance"]["type"]]=[]
@@ -73,7 +72,6 @@ def load_data(dataset_file,metadata_file):
 # Maps the appliances (images) with csv files
 def mapping_appliances(dataset_file,metadata_file):
     appliance_dict=load_data(dataset_file,metadata_file)
-    #print(appliance_dict)
     map_appliance={}
     for appliance in appliance_dict:
         i=0
@@ -82,6 +80,7 @@ def mapping_appliances(dataset_file,metadata_file):
             map_appliance[appliance +str(i)]=file_number
     return map_appliance
 
+# Save graphics of current signal and its RMS with steady samples itervals
 def generate_graphs_submetered(signal_dict_original,target_appliances=[],filepath=filepath_time_domain,sample_frequency=30000):
     dt=1/sample_frequency
     count=0

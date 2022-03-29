@@ -52,6 +52,7 @@ def KF_implementation(signal,zero_frequency_signal=None,harmonic_list=None,sampl
     alfa=0.15
     # Begin iterations  
     for k in range(n):   
+        # Last element of column vector X_k_est_prior gets DC component value
         X_k_est_prior[-1][0]=zero_frequency_signal[k]
 
         X_k_pred = T_matrix @ X_k_est_prior

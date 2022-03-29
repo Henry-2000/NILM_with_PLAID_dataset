@@ -161,7 +161,7 @@ def main():
         main()
 
     if x==10:
-        # Construct S matrix of of power signals as of voltage and current from aggregated data  (each row of matrix are one harmonic)
+        # Construct S matrix of of power signals as of voltage and current from aggregated data  (each row of matrix are one harmonic component)
         start_time = time.time()  
         data_dict=metadata_aggregated(metadata_aggregated_path)
         print("Loading aggregated dictionary...") 

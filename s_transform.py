@@ -1,6 +1,7 @@
 
 import numpy as np
 
+# Shifts spectrum by number of Hz given
 def shift_spectrum(signal_spectrum,shift_value_in_hz,sample_frequency=30000):
     dt=1/sample_frequency
     N=len(signal_spectrum)

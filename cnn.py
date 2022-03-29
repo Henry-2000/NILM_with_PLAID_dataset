@@ -55,6 +55,7 @@ def cnn_main(model=None):
         print('\nImporting Lenet model...')
         lenet_model=import_model()
         x_train,y_train,x_test,y_test,le ,labels_literal=process_data_VI_Images(k_folds=True)
+        # Removes last layer of Lenet
         lenet_model.pop()
         for layer in lenet_model.layers:
             layer.trainable=False        

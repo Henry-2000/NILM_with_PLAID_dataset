@@ -23,7 +23,7 @@ def reconstruct(signal_in_fft,highest_harmonic_order,length=None):
             else:
                 dict_harmonics[harmonic_number]=harmonic_in_time_domain.real[0:length]
             harmonic_number+=1          
-    THD=sum(np.square(mag_list[1:]))**0.5/mag_list[0] 
+    THD=sum(np.square(mag_list[1:]))**0.5/mag_list[0]           # Total Harmonic Distortion (THD) formula
     return dict_harmonics,THD             #Returns harmonic dictionary and THD value
 
 # Filter noise from signal

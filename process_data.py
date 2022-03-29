@@ -44,14 +44,12 @@ def metadata_aggregated(metadata_file_aggregated):
    
     return aggregated_dict
 
-
+# Construct a dictionary with steady samples of current and voltage signals for each appliance
 def steady_samples_submetered(submetered_file,data_dict):
     n_files=0
     for i in data_dict:
         n_files+=len(data_dict[i])
-      
     signal_dict={}
-    
     count=0
     for appliance_type in data_dict:             
         app_n=0
@@ -68,13 +66,10 @@ def steady_samples_submetered(submetered_file,data_dict):
                 sample_cycles=12
                 error_image=0
                 current_rms=generate_rms(current,mode='full_cycle')
-                indices=get_indices(current_rms,mode='full_cycle',sample_cycles=sample_cycles)
-                
-                if indices==None:
-                     
+                indices=get_indices(current_rms,mode='full_cycle',sample_cycles=sample_cycles)               
+                if indices==None:                    
                     error_image=1
-                    indices=get_indices(current_rms,None)
-                        
+                    indices=get_indices(current_rms,None)                       
                 signal_dict[f"{appliance_type}_{app_n}_{file}"]['current']=current                
                 signal_dict[f"{appliance_type}_{app_n}_{file}"]['voltage']=voltage                
                 signal_dict[f"{appliance_type}_{app_n}_{file}"]['indices']=indices

@@ -34,7 +34,7 @@ def generate_rms(signal,mode=None,number_of_samples=12,sample_frequency=30000,gr
             signal_rms=np.concatenate((signal_rms, i_rms), axis=None)  
     return signal_rms
 
-# Get indices of samples that has most steady cycles
+# Get indices of samples that have most steady cycles
 def get_indices(signal_rms,mode=None,sample_cycles=None,aggregated=0,sample_frequency=30000,grid_frequency=60):
     sample_dict={}
     sample_frag=[]
