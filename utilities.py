@@ -19,7 +19,8 @@ def handle_arrays(arrays,operation=None):
     else:
         return None
 
-
+# Given a classificator (clf) and a numerical vector of classes (X), returns best probabilities
+# in literal form with a label binarizer (lb)
 def get_best_tags(clf, X, lb, n_tags=3):
     decfun = clf.decision_function(X)
     best_tags = np.argsort(decfun)[:, :-(n_tags+1): -1]
