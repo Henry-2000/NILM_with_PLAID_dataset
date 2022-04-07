@@ -6,7 +6,7 @@ from six.moves import cPickle as pickle
 
 from harmonics import reconstruct, filter_harmonics, select_significant_harmonics
 from steady_samples import generate_rms, get_indices
-from utilities import count_progress, lag_value
+from utilities import count_progress, lag_value_in_degrees
 from kalman_filter import KF_implementation
 from s_transform import s_transform
 
@@ -245,7 +245,7 @@ def construct_harmonics_dict(signal_dict,highest_harmonic_order):
         harmonic_dict[appliance_type]['appliance'][appliance_name]['harmonic_order'][1]['voltage']=(voltage_decomposed[1])
         harmonic_dict[appliance_type]['appliance'][appliance_name]['THD_voltage']=THD_voltage
         harmonic_dict[appliance_type]['first_harmonic_mag'].append(max(current_decomposed[1]))
-        lag=lag_value(current,voltage)
+        lag=lag_value_in_degrees(current,voltage)
         if harmonic_dict[appliance_type]['appliance'][appliance_name]['error_value']==0:
             harmonic_dict[appliance_type]['mean_lag'].append(lag)
             harmonic_dict[appliance_type]['mean_THD_current'].append(THD_current)
