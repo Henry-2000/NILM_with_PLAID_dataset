@@ -359,11 +359,11 @@ def generate_VI_images_4x4(harmonic_dict,signal_dict,target_appliances=target_ap
     current_harmonics=[]
     voltage_harmonics=[]
     appliance_list=[]
-    low_THD_appliance_type=[]
+    resistive_type=[]
     max_current=[]
     for appliance_type in harmonic_dict:
-        if harmonic_dict[appliance_type]['mean_THD_current']<0.05:
-            low_THD_appliance_type.append(appliance_type)
+        if harmonic_dict[appliance_type]['mean_THD_current']<0.05 and harmonic_dict[appliance_type]['mean_lag']<=10:
+            resistive_type.append(appliance_type)
             max_current.append(harmonic_dict[appliance_type]['max_current'])
     imax=max(max_current)
     print(imax)
