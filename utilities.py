@@ -2,6 +2,8 @@ import numpy as np
 import sys 
 import gc
 
+from steady_samples import generate_rms, get_indices
+
 
 # Do operations to list of arrays of different sizes 
 def handle_arrays(arrays,operation=None):
@@ -33,44 +35,23 @@ def count_progress(number_of_files,count):
         print(f"Progress: {progress}%",end='\r')
 
 # Calculate lag by number of samples
-def lag_value(current,voltage,sample_frequency=30000,grid_frequency=60): 
-    # Samples per cycle
-    n_cycle=sample_frequency/grid_frequency
-    imax=max(current)
-    imin=min(current)
-    if abs(imax)>abs(imin):
-        i_amp=imax
-    else:
-        i_amp=imin
-    ind_current=find_nearest_index(current,i_amp)
-    ind_current+=125
-    ind_current=(ind_current)%(n_cycle/2)
-    if ind_current>n_cycle/4:
-        ind_current=ind_current-n_cycle/2
-        
-    vmax=max(voltage)
-    vmin=min(voltage)
-    if abs(vmax)>abs(vmin):
-        v_amp=vmax
-    else:
-        v_amp=vmin
-    ind_voltage=find_nearest_index(voltage,v_amp)
-    ind_voltage+=125
-    ind_voltage=(ind_voltage)%(n_cycle/2)
-    if ind_voltage>n_cycle/4:
-        ind_voltage=ind_voltage-n_cycle/2
-        
-    lag=ind_current-ind_voltage    
-    
-    if lag>n_cycle/4:
-        lag=lag-n_cycle/2
-    if lag<-n_cycle/4:
-        lag=n_cycle/2+lag     
-    return int(lag)
 
-# Force lag between signals (lag in number of samples)
-def shift_phase(current,voltage,lag=0): 
-    phase=lag_value(current,voltage)
+def lag_value_in_degrees(current,voltage,sample_frequency=30000,grid_frequency=60): 
+    # Samples per cycle
+    samples_per_cycle=int(sample_frequency/grid_frequency)
+    i_cross_zero=find_nearest_index(current,0)
+    v_cross_zero=find_nearest_index(voltage[i_cross_zero:i_cross_zero+int(samples_per_cycle/2)+1],0)+i_cross_zero
+    if i_cross_zero-v_cross_zero<-samples_per_cycle/4:
+        lag=-int(i_cross_zero+samples_per_cycle/2-v_cross_zero)*360/samples_per_cycle
+    else:
+        lag=-int(i_cross_zero-v_cross_zero)*360/samples_per_cycle
+        
+    return lag
+
+# Force lag between signals (lag in degrees)
+def shift_phase(current,voltage,lag=0,sample_frequency=30000,grid_frequency=60): 
+    samples_per_cycle=int(sample_frequency/grid_frequency)
+    phase=int(lag_value_in_degrees(current,voltage)*samples_per_cycle/360)
     
     phase+=lag
       
@@ -92,7 +73,6 @@ def get_obj_size(obj):
     marked = {id(obj)}
     obj_q = [obj]
     sz = 0
-
     while obj_q:
         sz += sum(map(sys.getsizeof, obj_q))
 
@@ -140,6 +120,7 @@ def find_peaks_rms(signal_rms,sample_frequency=30000,grid_frequency=60,factor=5,
             i+=resolution
     return event_indexes
 
+# Turn multidimensional lists into unidimensional list
 def flatten(list_to_be_flatten):
     return [item for sublist in list_to_be_flatten for item in sublist]
 
