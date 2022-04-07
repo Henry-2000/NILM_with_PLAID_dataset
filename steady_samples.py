@@ -7,7 +7,7 @@ dt=1/fs
 n_cycle=fs/fn
 
 # Construct RMS signal
-def generate_rms(signal,mode=None,number_of_samples=12,sample_frequency=30000,grid_frequency=60):
+def generate_rms(signal,mode=None,number_of_cycles=12,sample_frequency=30000,grid_frequency=60):
     n = len(signal)   
     samples_per_cycle=sample_frequency/grid_frequency
     duration=n/sample_frequency   
@@ -18,7 +18,7 @@ def generate_rms(signal,mode=None,number_of_samples=12,sample_frequency=30000,gr
     elif mode=='full_cycle':
         resolution=samples_per_cycle
     else:
-        resolution=number_of_samples
+        resolution=number_of_cycles
     interv=np.arange(0,len(time),resolution)
     for i in interv:
         signal_pow=0                      
