@@ -120,9 +120,12 @@ def find_peaks_rms(signal_rms,sample_frequency=30000,grid_frequency=60,factor=5,
     # Number of samples from center of peak to limit value
     i=int(limit+target_width/2)
     while i<int(n-(limit+target_width/2)):
+        # Sum all neighbour samples after peak width
         superior_total=sum(signal_rms[int(i+target_width):int(i+target_width+limit):resolution])
+        # Sum all neighbour samples before peak width
         inferior_total=sum(signal_rms[int(i-target_width-limit):int(i-target_width+1):resolution])
         if width>1:
+            # Sum all samples within peak width
             target_total=sum(signal_rms[int(i-target_width/2):int(i+target_width/2+1):resolution])     
         else:
             target_total=signal_rms[int(i)]
