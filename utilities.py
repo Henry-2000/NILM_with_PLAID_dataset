@@ -93,6 +93,16 @@ def get_obj_size(obj):
     return sz
 
 def find_peaks_rms(signal_rms,sample_frequency=30000,grid_frequency=60,factor=5,width=3,mode=None,number_of_samples=12):
+    """
+    Given a resolution of samples (fixed number of samples), returns indexes of samples considered
+    to be signal peaks
+
+    'width': integer number of resolution samples that will be summed 
+    to give the peak magnitude
+    
+    'factor': integer number of resolution samples above and below width 
+    that will be summed to give neighbours magnitude 
+    """ 
     samples_per_cycle=sample_frequency/grid_frequency
     n = len(signal_rms)  
     if mode=='full_cycle':
@@ -101,9 +111,13 @@ def find_peaks_rms(signal_rms,sample_frequency=30000,grid_frequency=60,factor=5,
         resolution=int(samples_per_cycle/2)
     else:
         resolution=int(number_of_samples)
+    # Range of samples above and below peak width
     limit=int(factor*resolution)
+    # Number of samples inside peak width
     target_width=int(width*resolution)
+    # List of peak indexes
     event_indexes=[]
+    # Number of samples from center of peak to limit value
     i=int(limit+target_width/2)
     while i<int(n-(limit+target_width/2)):
         superior_total=sum(signal_rms[int(i+target_width):int(i+target_width+limit):resolution])
