@@ -246,6 +246,7 @@ def generate_graphs_frequency_domain(signal_dict_original,harmonic_dict,target_a
             current_harmonics+=harmonic_dict[appliance_type]['appliance'][appliance_name]['harmonic_order'][harmonic_order]['current']
         freq_axes = np.fft.fftfreq(n_interval, d=dt)
         fft_amp_interval,fft_phase_interval=filter_harmonics(current_harmonics,highest_harmonic_order)
+        
         fft_amp_interval=fft_amp_interval/n_interval
         
         indices_harmonics=np.where(fft_amp_interval!=0)
@@ -253,11 +254,11 @@ def generate_graphs_frequency_domain(signal_dict_original,harmonic_dict,target_a
         mag_y=[]
         fft_phase_cut_correct=np.zeros(len(fft_phase_interval))
         for i in indices_harmonics[0][:highest_harmonic_order]:
-            fft_phase_cut_correct[i]=fft_phase_interval[i]
+            fft_phase_cut_correct[i]=fft_phase_interval[i]*180/np.pi
             mag_x.append(freq_axes[i])
             mag_y.append(fft_amp_interval[i])
             
-            
+        
         fig = plt.figure(constrained_layout=True)
         gs = GridSpec(4, 1, figure=fig)
         fig = plt.gcf()
@@ -300,7 +301,7 @@ def generate_graphs_frequency_domain(signal_dict_original,harmonic_dict,target_a
         plt.xlabel('Frequency [Hz]',fontsize=12)
         plt.ylabel('Phase I(f) [degrees]',fontsize=12)
         for i in range(highest_harmonic_order):
-            plt.text(freq_axes[indices_harmonics[0][i]],fft_phase_cut_correct[indices_harmonics[0][i]]*180/np.pi,f"{fft_phase_cut_correct[indices_harmonics[0][i]]:.2f}")
+            plt.text(freq_axes[indices_harmonics[0][i]],fft_phase_cut_correct[indices_harmonics[0][i]],f"{fft_phase_cut_correct[indices_harmonics[0][i]]:.2f}")
         plt.grid()
         plt.xticks(np.arange(0,(highest_harmonic_order+1)*grid_frequency,grid_frequency),fontsize=10)
         plt.xlim(0,(highest_harmonic_order+1)*grid_frequency)
