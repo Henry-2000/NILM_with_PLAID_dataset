@@ -94,61 +94,61 @@ def generate_graphs_submetered(signal_dict_original,target_appliances=[],filepat
     n_appliances=len(signal_dict)
     for appliance_name in signal_dict:       
         count_progress(n_appliances,count)
-        if count>=1238:
-            current=signal_dict[appliance_name]['current']
-            indices=signal_dict[appliance_name]['indices']
-            appliance_type=signal_dict[appliance_name]['appliance_type']
-            current_rms=generate_rms(current,mode='full_cycle')
-            fig1,axes1 = plt.subplots(2,1)
-            fig1 = plt.gcf()
-            fig1.set_size_inches(20, 10)
-            fig1.tight_layout(pad=5.0)
+        
+        current=signal_dict[appliance_name]['current']
+        indices=signal_dict[appliance_name]['indices']
+        appliance_type=signal_dict[appliance_name]['appliance_type']
+        current_rms=generate_rms(current,mode='full_cycle')
+        fig1,axes1 = plt.subplots(2,1)
+        fig1 = plt.gcf()
+        fig1.set_size_inches(20, 10)
+        fig1.tight_layout(pad=5.0)
 
-            duration=len(current)/sample_frequency
-            time= np.linspace(0,duration,num=int(np.ceil(duration/dt)))
+        duration=len(current)/sample_frequency
+        time= np.linspace(0,duration,num=int(np.ceil(duration/dt)))
+        
+        plt.grid()
+        plt.sca(axes1[0])
+        plt.title('(a)',fontsize=20,pad=15)
+        axes1[0].plot(time,current,'b',label=f'Corrente - {appliance_name}')
+        axes1[0].plot(time,current_rms,'r',label=f'Corrente RMS - {appliance_name}')
+        plt.axvline(time[indices[0]],0,1,color='g',lw=3)
+        plt.axvline(time[indices[1]-1],0,1,color='g',lw=3)
+        plt.xlabel('Tempo [s]')
+        plt.ylabel('Corrente [A]')
+        plt.xticks(np.arange(0, max(time)+1000*dt,np.around(max(time),1)/20))
+        plt.xlim(0,max(time))
+        axes1[0].legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left', ncol=1, borderaxespad=0.)
             
-            plt.grid()
-            plt.sca(axes1[0])
-            plt.title('(a)',fontsize=20,pad=15)
-            axes1[0].plot(time,current,'b',label=f'Corrente - {appliance_name}')
-            axes1[0].plot(time,current_rms,'r',label=f'Corrente RMS - {appliance_name}')
-            plt.axvline(time[indices[0]],0,1,color='g',lw=3)
-            plt.axvline(time[indices[1]-1],0,1,color='g',lw=3)
-            plt.xlabel('Tempo [s]')
-            plt.ylabel('Corrente [A]')
-            plt.xticks(np.arange(0, max(time)+1000*dt,np.around(max(time),1)/20))
-            plt.xlim(0,max(time))
-            axes1[0].legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left', ncol=1, borderaxespad=0.)
-                
-            plt.grid()
-            plt.sca(axes1[1])
-            plt.title('(b)',fontsize=20,pad=15)
-            axes1[1].plot(time[indices[0]:indices[1]],current[indices[0]:indices[1]],'b',label=f'Corrente - {appliance_name}')
-            axes1[1].plot(time[indices[0]:indices[1]],current_rms[indices[0]:indices[1]],'r',label=f'Corrente RMS - {appliance_name}')
-            plt.xlabel('Tempo [s]')
-            plt.ylabel('Corrente [A]')
-            plt.xlim(time[indices[0]],time[indices[1]-1])
-            inf=time[indices[0]]
-            sup=time[indices[1]-1]
-            axes1[1].xaxis.set_major_formatter(FormatStrFormatter('%.3f'))
-            step=((sup-inf)-1000*dt)/10
-            plt.xticks(np.arange(inf, sup+100*dt, step))
-            axes1[1].legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left', ncol=1, borderaxespad=0.)
-            plt.tight_layout()
+        plt.grid()
+        plt.sca(axes1[1])
+        plt.title('(b)',fontsize=20,pad=15)
+        axes1[1].plot(time[indices[0]:indices[1]],current[indices[0]:indices[1]],'b',label=f'Corrente - {appliance_name}')
+        axes1[1].plot(time[indices[0]:indices[1]],current_rms[indices[0]:indices[1]],'r',label=f'Corrente RMS - {appliance_name}')
+        plt.xlabel('Tempo [s]')
+        plt.ylabel('Corrente [A]')
+        plt.xlim(time[indices[0]],time[indices[1]-1])
+        inf=time[indices[0]]
+        sup=time[indices[1]-1]
+        axes1[1].xaxis.set_major_formatter(FormatStrFormatter('%.3f'))
+        step=((sup-inf)-1000*dt)/10
+        plt.xticks(np.arange(inf, sup+100*dt, step))
+        axes1[1].legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left', ncol=1, borderaxespad=0.)
+        plt.tight_layout()
 
-            if signal_dict[appliance_name]['error_value']==0:
-                if not os.path.exists(filepath + "/valid_graphics/"):                
-                    os.makedirs(f"{filepath}/valid_graphics")
-                if not os.path.exists(f"{filepath}/valid_graphics/{appliance_type}"):
-                    os.makedirs(f"{filepath}/valid_graphics/{appliance_type}")                
-                plt.savefig(f"{filepath}/valid_graphics/{appliance_type}/{appliance_name}.png") 
-            else:
-                if not os.path.exists(f"{filepath}/error_graphics"):                
-                    os.makedirs(f"{filepath}/error_graphics/")
-                if not os.path.exists(f"{filepath}/error_graphics/{appliance_type}"):                
-                    os.makedirs(f"{filepath}/error_graphics/{appliance_type}")
-                plt.savefig(f"{filepath}/error_graphics/{appliance_type}/{appliance_name}.png")
-            plt.close(fig1)
+        if signal_dict[appliance_name]['error_value']==0:
+            if not os.path.exists(filepath + "/valid_graphics/"):                
+                os.makedirs(f"{filepath}/valid_graphics")
+            if not os.path.exists(f"{filepath}/valid_graphics/{appliance_type}"):
+                os.makedirs(f"{filepath}/valid_graphics/{appliance_type}")                
+            plt.savefig(f"{filepath}/valid_graphics/{appliance_type}/{appliance_name}.png") 
+        else:
+            if not os.path.exists(f"{filepath}/error_graphics"):                
+                os.makedirs(f"{filepath}/error_graphics/")
+            if not os.path.exists(f"{filepath}/error_graphics/{appliance_type}"):                
+                os.makedirs(f"{filepath}/error_graphics/{appliance_type}")
+            plt.savefig(f"{filepath}/error_graphics/{appliance_type}/{appliance_name}.png")
+        plt.close(fig1)
         count+=1
 
 def generate_graphs_aggregated(aggregated_dict_original,target_samples=[],filepath=filepath_aggregated,sample_frequency=30000):
