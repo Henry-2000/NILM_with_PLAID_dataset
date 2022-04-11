@@ -48,6 +48,7 @@ def cnn_main(model=None):
         save_model(model)
     if ans==2:
         """ 
+        Requires LeNet model trained and saved as .h5 file in '../models' directory.
         OBS: due to long process of training (100 epochs and 4 times with K-FOLD)
         it's recommended use of GPU. If not available on your machine, try online
         platforms that offers GPU services online (Kaggle, Google Colab, ...). Just paste
