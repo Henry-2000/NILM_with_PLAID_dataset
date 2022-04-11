@@ -150,6 +150,7 @@ def generate_graphs_submetered(signal_dict_original,target_appliances=[],filepat
             plt.savefig(f"{filepath}/error_graphics/{appliance_type}/{appliance_name}.png")
         plt.close(fig1)
         count+=1
+    print(f"Graphs saved in '{filepath}'\n")
 
 def generate_graphs_aggregated(aggregated_dict_original,target_samples=[],filepath=filepath_aggregated,sample_frequency=30000):
 
@@ -320,6 +321,7 @@ def generate_graphs_frequency_domain(signal_dict_original,harmonic_dict,target_a
             plt.savefig(f"{filepath}/error_graphics/{appliance_type}/{appliance_name}.png")
         plt.close(fig)
         count+=1
+    print(f"Graphs saved in '{filepath}'\n")
 
 
 # Save images of VxI of appliances
@@ -341,17 +343,17 @@ def generate_VI_images(harmonic_dict,filepath=filepath_VI_images,highest_odd_har
             odd=0
             for i in range(2):                                 
                 current,voltage=harmonics_selection(harmonic_dict,highest_odd_harmonic_order,appliance_type,appliance_name,lag=i,odd=odd)
-                image_saving(harmonic_dict,filepath,appliance_type,appliance_name,voltage,current,low_THD_appliance_type,imax,mode)
+                save_trajectory(harmonic_dict,filepath,appliance_type,appliance_name,voltage,current,low_THD_appliance_type,imax,mode)
                 mode+=1 
                 odd+=1
                 current,voltage=harmonics_selection(harmonic_dict,highest_odd_harmonic_order,appliance_type,appliance_name,lag=i,odd=odd)
-                image_saving(harmonic_dict,filepath,appliance_type,appliance_name,voltage,current,low_THD_appliance_type,imax,mode)
+                save_trajectory(harmonic_dict,filepath,appliance_type,appliance_name,voltage,current,low_THD_appliance_type,imax,mode)
                 mode+=1
                 odd-=1
                                
             count_progress(n_images,count)                                  
             count+=1
-
+    print(f"V-I trajectories saved in '{filepath}'\n")
 
 def generate_VI_images_4x4(harmonic_dict,signal_dict,target_appliances=target_appliances,filepath=filepath_VI_images):
     letters=['(a)','(b)','(c)','(d)','(e)','(f)','(g)','(h)','(i)','(j)','(k)','(l)','(m)','(n)','(o)','(p)']
@@ -451,7 +453,7 @@ def generate_VI_images_4x4(harmonic_dict,signal_dict,target_appliances=target_ap
 
 
 
-def image_saving(harmonic_dict,filepath,appliance_type,appliance_name,voltage,current,low_THD_appliance_type,imax,mode=0):
+def save_trajectory(harmonic_dict,filepath,appliance_type,appliance_name,voltage,current,low_THD_appliance_type,imax,mode=0):
     fig = plt.figure(frameon = False)
     fig.set_size_inches(1, 1)   
     ax = plt.axes()
