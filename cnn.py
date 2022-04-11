@@ -25,7 +25,7 @@ SAVE_DIR="images"
 
 def cnn_main(model=None):
     available_options=[1,2,3,4]
-    print("Choose an option below: \n" ,
+    print("\nChoose an option below: \n" ,
         "\n(1) Train Lenet model with MNIST dataset ",
         "\n(2) Train VI-Lenet model with binary VI images (GPU recommended)",
         "\n(3) Evaluate perfomance of VI- Lenet model with test images",
@@ -42,10 +42,26 @@ def cnn_main(model=None):
         available_options=['Y','N']
         print('\nTraining Lenet model on MNIST dataset...')
         x_train,y_train,x_test,y_test=process_data_MNIST()
-        model=LeNet_model(x_train)
-        history = [model.fit(x_train, y_train, epochs=EPOCHS_LENET)]
-        plot_training_results(model,history,EPOCHS_LENET,'history_lenet')
-        save_model(model)
+        lenet_model=LeNet_model(x_train)
+        if not os.path.exists(f"{OUTPUT_MODEL_DIR}/models_architecures"):
+            os.makedirs(f"{OUTPUT_MODEL_DIR}/models_architecures/") 
+        tf.keras.utils.plot_model(
+            lenet_model,
+            to_file=f"{OUTPUT_MODEL_DIR}/models_architecures/lenet_model.png",
+            show_shapes=True,
+            show_dtype=False,
+            show_layer_names=True,
+            rankdir="TB",
+            expand_nested=True,
+            dpi=96,
+            )
+        if not os.path.exists(f"{OUTPUT_MODEL_DIR}/models_architecures"):
+            os.makedirs(f"{OUTPUT_MODEL_DIR}/models_architecures/") 
+        save_summary(lenet_model,'lenet')
+        print(f"Model architecture saved in '{OUTPUT_MODEL_DIR}/models_architecures/'\n")
+        history = [lenet_model.fit(x_train, y_train, epochs=EPOCHS_LENET)]
+        plot_training_results(lenet_model,history,EPOCHS_LENET,'history_lenet')
+        save_model(lenet_model)
     if ans==2:
         """ 
         Requires LeNet model trained and saved as .h5 file in '.../models/' directory.
@@ -87,10 +103,12 @@ def cnn_main(model=None):
         output=layers.Dense(units=NUM_CATEGORIES,activation='softmax',name="last_layer")(output)
         complete_model = tf.keras.Model(inputs = VI_model.input, outputs = output)
         complete_model.summary() 
-        save_summary(complete_model,'VI_lenet')
+        save_summary(complete_model,'V-I_lenet')
+        if not os.path.exists(f"{OUTPUT_MODEL_DIR}/models_architecures"):
+            os.makedirs(f"{OUTPUT_MODEL_DIR}/models_architecures/") 
         tf.keras.utils.plot_model(
             complete_model,
-            to_file=f"{SAVE_DIR}/complete_model.png",
+            to_file=f"{OUTPUT_MODEL_DIR}/models_architecures/V-I_model.png",
             show_shapes=True,
             show_dtype=False,
             show_layer_names=True,
@@ -98,6 +116,7 @@ def cnn_main(model=None):
             expand_nested=True,
             dpi=96,
             )
+        print(f"Model architecture saved in '{OUTPUT_MODEL_DIR}/models_architecures/'\n")
         complete_model.compile(
             optimizer='adam', 
             loss='categorical_crossentropy', 
@@ -113,14 +132,15 @@ def cnn_main(model=None):
         save_model(complete_model)
     if ans==3:
         VI_lenet_model=import_model()
-        for i in range(1000):
-            x_train,y_train,x_test,y_test,le,labels_literal=process_data_VI_Images(k_folds=False) 
-            prediction=VI_lenet_model.predict(x_test[0])
-            prediction_uni=[]
-            label_uni=[]
-            for i in range(len(prediction)):
-                prediction_uni.append(np.argmax([prediction[i]]))
-                label_uni.append(np.argmax([y_test[0][i]]))
+        prediction_uni=[]
+        label_uni=[]
+        print(f'Plotting Confusion Matrix...')
+        x_train,y_train,x_test,y_test,le,labels_literal=process_data_VI_Images(k_folds=False) 
+        prediction=VI_lenet_model.predict(x_test[0])
+        for j in range(len(prediction)):
+            prediction_uni.append(np.argmax([prediction[j]]))
+            label_uni.append(np.argmax([y_test[0][j]]))
+    
         confusionMatrix = tf.math.confusion_matrix(labels=label_uni, predictions=prediction_uni,num_classes=16)
         df_cm = pd.DataFrame(confusionMatrix, index = [i for i in labels_literal],
                   columns = [i for i in labels_literal])
@@ -130,6 +150,7 @@ def cnn_main(model=None):
         if not os.path.exists(f"{SAVE_DIR}/confusion_matrix"):
             os.makedirs(f"{SAVE_DIR}/confusion_matrix/") 
         plt.savefig(f"{SAVE_DIR}/confusion_matrix/confusion_matrix.png",dpi=128)
+        print(f"Confusion Matrix saved in '{SAVE_DIR}/confusion_matrix/'\n")
     if ans==4:
         exit()
 
@@ -159,14 +180,17 @@ def save_model(model=None):
         if not os.path.exists(f"{OUTPUT_MODEL_DIR}"):
             os.makedirs(f"{OUTPUT_MODEL_DIR}/")         
         model.save(f"{OUTPUT_MODEL_DIR}/{filename}.h5",save_format='h5')
-        print(f"Model saved to {OUTPUT_MODEL_DIR}/{filename}.h5.")
+        print(f"Model saved in '{OUTPUT_MODEL_DIR}'\n")
         cnn_main(model)
     else:
         cnn_main()   
 
 def save_summary(model,filename):
-    with open(f'{SAVE_DIR}summary_{filename}.txt', 'a') as f:
+    if not os.path.exists(f"{OUTPUT_MODEL_DIR}/models_summaries"):
+            os.makedirs(f"{OUTPUT_MODEL_DIR}/models_summaries/") 
+    with open(f'{OUTPUT_MODEL_DIR}/summary_{filename}.txt', 'a') as f:
         model.summary(print_fn=lambda x: f.write(x + '\n'))
+    print(f"Model summary saved in '{OUTPUT_MODEL_DIR}/models_summaries/'\n")
     
 def test_results(n_tests,x_test,y_test,VI_Lenet_model,SVM_model,le):
     y_test=np.argmax(y_test, axis=1)
@@ -341,9 +365,10 @@ def plot_training_results(model,history,epochs,filename):
         plt.legend(loc='upper right')
         j+=1
     plt.tight_layout()    
-    if not os.path.exists(f"graphics/training_history"):
-        os.makedirs(f"graphics/training_history/")
-    plt.savefig(f"graphics/training_history/{filename}.png",dpi=128)
+    if not os.path.exists(f"{OUTPUT_MODEL_DIR}/training_history"):
+        os.makedirs(f"{OUTPUT_MODEL_DIR}/training_history/")
+    plt.savefig(f"{OUTPUT_MODEL_DIR}/training_history/{filename}.png",dpi=128)
+    print(f"Training history saved in '{OUTPUT_MODEL_DIR}/training_history/'\n")
 
 if __name__ == "__main__":
     cnn_main()
