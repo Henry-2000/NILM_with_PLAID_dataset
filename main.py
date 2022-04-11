@@ -25,7 +25,7 @@ residue_path = data_path + '/residue/'
 
 def main():
     available_options=np.arange(1,14)
-    print("Choose an option below: \n\
+    print("\nChoose an option below: \n\
             \n(1) See appliances mapping of submetered data\
             \n(2) See appliances mapping of aggregated data\
             \n\n############ LOAD CLASSIFICATION APPROACH ############\
@@ -91,6 +91,7 @@ def main():
         with open(data_path + '/steady_samples_dict.pkl', 'wb') as f: 
             pickle.dump(steady_samples_dict, f, pickle.HIGHEST_PROTOCOL)        
         print(f"\nExecution Time: {int(time.time() - start_time)} seconds\n")
+        print(f"Steady samples dictionary saved in '{data_path}'")
         main()
 
     if x==4:
@@ -105,6 +106,7 @@ def main():
         with open(data_path + '/harmonic_dict.pkl', 'wb') as f: 
             pickle.dump(harmonic_dict, f, pickle.HIGHEST_PROTOCOL)       
         print(f"\nExecution Time: {int(time.time() - start_time)} seconds\n")
+        print(f"Harmonics dictionary saved in '{data_path}'")
         main()
 
     if x==5:
