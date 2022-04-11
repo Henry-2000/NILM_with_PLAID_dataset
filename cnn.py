@@ -12,15 +12,15 @@ from sklearn.model_selection import StratifiedKFold
 import matplotlib.pyplot as plt
 from tensorflow.keras.utils import to_categorical
 
-from utilities import count_progress
 
 EPOCHS = 100
 EPOCHS_LENET = 10
 IMG_WIDTH = 128
 IMG_HEIGHT = 128
 NUM_CATEGORIES = 16
-IMAGE_DIR="images/v-i_images/valid_images/"
-MODEL_DIR="models"
+INPUT_IMAGE_DIR="images/v-i_images/valid_images/"
+INPUT_MODEL_DIR="models"
+OUTPUT_MODEL_DIR="models"
 SAVE_DIR="images"
 
 def cnn_main(model=None):
@@ -47,11 +47,32 @@ def cnn_main(model=None):
         plot_training_results(model,history,EPOCHS_LENET,'history_lenet')
         save_model(model)
     if ans==2:
-        # OBS: due to long process of training (100 epochs and 4 times with K-FOLD)
-        # it's recommended use of GPU. If not available on your machine, try online
-        # platforms that offers GPU services online (Kaggle, Google Colab, ...). Just paste
-        # cnn.py on editor of platform and change directories only to get trained model, then save it 
-        # to local directory (".../models/"). Maybe will need to upload V-I images for training.
+        """ 
+        OBS: due to long process of training (100 epochs and 4 times with K-FOLD)
+        it's recommended use of GPU. If not available on your machine, try online
+        platforms that offers GPU services online (Kaggle, Google Colab, ...). Just paste
+        cnn.py content on editor of platform and change directories only to get trained model, then save it 
+        to local directory (".../models/"). Maybe will need to upload V-I images for training.
+
+        Instructions for training and saving model with Kaggle's GPU:
+        1) Go to https://www.kaggle.com/ and create user account;
+        2) Click on 'Code' in left menu and then on 'New Notebook';
+        3) Click on plus sign '+' to create a new cell and paste the content of this file there;
+        4) Zip the V-I trajectories file and upload to Kaggle by clicking on '+ Add data' on right side menu
+        and then 'Upload a Dataset';
+        5) Give it a name (example: 'VI_images') and click on 'Create';
+        6) Upload the .h5 file of lenet model located in '.../model/' directory the same way;
+        7) On the right side menu, below 'Input Data', click on your dataset and locate 'valid_images' directory;
+        8) On the right of 'valid_images', click on 'Copy file path' and paste it to 'INPUT_IMAGE_DIR' in code;
+        9) Also copy the path of lenet model and paste it to 'INPUT_MODEL_DIR' in code;
+        10) Copy the path of 'kaggle/working' below 'Output' on the right side menu and 
+        paste it to 'SAVE_DIR' and 'OUTPUT_MODEL_DIR' in code; 
+        11) In 'Settings', choose 'GPU' on 'Accelerator' menu;  
+        12) Execute code by clicking on 'Run all';
+        13) After code execution, give the model a name and save it;
+        14) Model will be save inside 'kaggle/working' as .h5 file, download it to '../models/' directory on local machine.
+        """
+
         print('\nImporting Lenet model...')
         lenet_model=import_model()
         x_train,y_train,x_test,y_test,le ,labels_literal=process_data_VI_Images(k_folds=True)
@@ -68,7 +89,7 @@ def cnn_main(model=None):
         save_summary(complete_model,'VI_lenet')
         tf.keras.utils.plot_model(
             complete_model,
-            to_file=f"{SAVE_DIR}/images/complete_model.png",
+            to_file=f"{SAVE_DIR}/complete_model.png",
             show_shapes=True,
             show_dtype=False,
             show_layer_names=True,
@@ -92,7 +113,6 @@ def cnn_main(model=None):
     if ans==3:
         VI_lenet_model=import_model()
         for i in range(1000):
-            count_progress(1000,i)
             x_train,y_train,x_test,y_test,le,labels_literal=process_data_VI_Images(k_folds=False) 
             prediction=VI_lenet_model.predict(x_test[0])
             prediction_uni=[]
@@ -116,7 +136,7 @@ def import_model():
     while True:
         filename = input("\nModel name: ")
         try:
-            model = tf.keras.models.load_model(f"{MODEL_DIR}/{filename}.h5")
+            model = tf.keras.models.load_model(f"{INPUT_MODEL_DIR}/{filename}.h5")
             model.summary()
             print('Model imported.')
             break
@@ -135,10 +155,10 @@ def save_model(model=None):
         print("Invalid option.")
     if ans=='Y':
         filename = input("\nModel name: ")  
-        if not os.path.exists(f"{MODEL_DIR}"):
-            os.makedirs(f"{MODEL_DIR}/")         
-        model.save(f"{MODEL_DIR}/{filename}.h5",save_format='h5')
-        print(f"Model saved to {filename}.h5.")
+        if not os.path.exists(f"{OUTPUT_MODEL_DIR}"):
+            os.makedirs(f"{OUTPUT_MODEL_DIR}/")         
+        model.save(f"{OUTPUT_MODEL_DIR}/{filename}.h5",save_format='h5')
+        print(f"Model saved to {OUTPUT_MODEL_DIR}/{filename}.h5.")
         cnn_main(model)
     else:
         cnn_main()   
@@ -224,7 +244,7 @@ def process_data_MNIST():
 
 def process_data_VI_Images(k_folds=True):
     le = preprocessing.LabelEncoder()
-    (images, labels), labels_literal = load_data(IMAGE_DIR)
+    (images, labels), labels_literal = load_data(INPUT_IMAGE_DIR)
     X=np.array(images)
     Y=np.array(labels)
     
@@ -320,9 +340,9 @@ def plot_training_results(model,history,epochs,filename):
         plt.legend(loc='upper right')
         j+=1
     plt.tight_layout()    
-    if not os.path.exists(f"/graphics/training_history"):
-        os.makedirs(f"/graphics/training_history/")
-    plt.savefig(f"{SAVE_DIR}/graphics/training_history/{filename}.png",dpi=128)
+    if not os.path.exists(f"graphics/training_history"):
+        os.makedirs(f"graphics/training_history/")
+    plt.savefig(f"graphics/training_history/{filename}.png",dpi=128)
 
 if __name__ == "__main__":
     cnn_main()
