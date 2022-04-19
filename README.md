@@ -14,7 +14,7 @@ Files content:
 * [kalman_filter.py](https://github.com/hsneto/iftex/blob/master/textuais/testes.tex#L60) - include function for Kalman Filter implementation that returns residue signal (for event detection of aggregated data);
 * [generate_graphs.py](https://github.com/hsneto/iftex/blob/master/textuais/testes.tex#L60) - include functions to generate graphs and V-I trajectories;
 * [utilities.py](https://github.com/hsneto/iftex/blob/master/textuais/testes.tex#L60) - include functions for specific data handling;
-* [cnn.py](https://github.com/hsneto/iftex/blob/master/textuais/testes.tex#L60) - include functions for convolutional neural network construction for V-I trajectories classification, once they are constructed.
+* [cnn.py](https://github.com/hsneto/iftex/blob/master/textuais/testes.tex#L60) - include functions for convolutional neural network construction and V-I trajectories classification, once they are obtained.
 
 Contact e-mail:
 hcampaneli@gmail.com
