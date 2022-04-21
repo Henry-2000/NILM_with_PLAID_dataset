@@ -128,7 +128,7 @@ def construct_s_matrix_signals(aggregated_dict,data_dict,filename):
         
         combination_ST_matrix,noise_combination,gauss_comb,combination_fft_ST,fstart_comb,fend_comb=s_transform(combination,gauss_width,range_from_harmonic,harmonic_list_by_magnitude,grid_frequency=power_frequency)
         
-        combination_ST=np.zeros(N)
+        combination_ST=np.zeros(N,dtype='complex_')
         
         for harmonic in combination_ST_matrix:
             if harmonic!=0:
@@ -150,7 +150,8 @@ def construct_residual_signals(metadata_aggregated,filename,s_matrix_path):
     count=0   
     for i in range(1,n_files+1):    
         count_progress(n_files,count)
-        count+=1             
+        count+=1
+                   
         with open(f"{s_matrix_path}s_matrix_dict_file{i}.pkl", 'rb') as f: 
             s_matrix_power=pickle.load(f)
         power=s_matrix_power['combined_harmonics']+s_matrix_power['zero_frequency'] 

@@ -12,7 +12,6 @@ from sklearn.model_selection import StratifiedKFold
 import matplotlib.pyplot as plt
 from tensorflow.keras.utils import to_categorical
 
-
 EPOCHS = 100
 EPOCHS_LENET = 10
 IMG_WIDTH = 128
@@ -192,39 +191,20 @@ def save_summary(model,filename):
         model.summary(print_fn=lambda x: f.write(x + '\n'))
     print(f"Model summary saved in '{OUTPUT_MODEL_DIR}/models_summaries/'\n")
     
-def test_results(n_tests,x_test,y_test,VI_Lenet_model,SVM_model,le):
-    y_test=np.argmax(y_test, axis=1)
-    print(y_test.shape)
-    y_test = tf.reshape(y_test, [y_test.shape[-1]])
-    y_test = le.inverse_transform(y_test)
-    for i in range(n_tests):
-        n=np.random.randint(0, x_test.shape[0])
-        img = tf.squeeze(x_test[n])
-        plt.imshow(img)
-        print(img.shape)
-        input_img = np.expand_dims(img, axis=0) #Expand dims so the input is (num images, x, y, c)
-        print(input_img.shape)
-        input_img_feature=VI_Lenet_model.predict(input_img)
-        input_img_features=input_img_feature.reshape(input_img_feature.shape[0], -1)
-        prediction_SVM = SVM_model.predict(input_img_features)[0] 
-        prediction_SVM = le.inverse_transform([prediction_SVM])  #Reverse the label encoder to original name
-        
-        print("The prediction for this image is: ", prediction_SVM)
-        print("The actual label for this image is: ", y_test[n])
-
-
 def load_data(data_dir):   
-    # Load image data from directory `data_dir`.
+    """
+    Load image data from directory `data_dir`.
 
-    # Assume `data_dir` has one directory named after each category.\
-    # Inside each category directory will be some number of image files.
+    Assume `data_dir` has one directory named after each category.\
+    Inside each category directory will be some number of image files.
 
-    # Return tuple `(images, labels)`. `images` should be a list of all
-    # of the images in the data directory, where each image is formatted as a
-    # numpy ndarray with dimensions IMG_WIDTH x IMG_HEIGHT x 1. `labels` should
-    # be a list of strings (ex: 'Laptop', 'Blender', ...), \
-    # representing the categories for each of the
-    # corresponding `images/loads`.   
+    Return tuple `(images, labels)`. `images` should be a list of all
+    of the images in the data directory, where each image is formatted as a
+    numpy ndarray with dimensions IMG_WIDTH x IMG_HEIGHT x 1. `labels` should
+    be a list of strings (ex: 'Laptop', 'Blender', ...), \
+    representing the categories for each of the
+    corresponding `images/loads`.   
+    """
     images=[]
     labels=[]
     labels_literal=[]
@@ -237,7 +217,6 @@ def load_data(data_dir):
             labels.append(str(category)) 
         labels_literal.append(str(category))
     return (images,labels),labels_literal
-
 
 def process_data_MNIST():
     # Load MNIST dataset and separate images and labels into train and test samples
@@ -266,13 +245,11 @@ def process_data_MNIST():
 
     return x_train,y_train,x_test,y_test
 
-
 def process_data_VI_Images(k_folds=True):
     le = preprocessing.LabelEncoder()
     (images, labels), labels_literal = load_data(INPUT_IMAGE_DIR)
     X=np.array(images)
     Y=np.array(labels)
-    
     skf = StratifiedKFold(n_splits=4,shuffle=True)
     i=0
     X_train=[]
@@ -301,9 +278,7 @@ def process_data_VI_Images(k_folds=True):
         
     return X_train,Y_train,X_test,Y_test,le,labels_literal
 
-
 def get_model(x_train):
-
     model = models.Sequential([
         tf.keras.Input(shape=x_train[0].shape,name='Input'),  
         layers.experimental.preprocessing.Rescaling(1./255,name='Rescaling'),    
@@ -318,7 +293,6 @@ def get_model(x_train):
     model.summary()
 
     return model
-
 
 def LeNet_model(x_train):
     """
@@ -351,9 +325,7 @@ def plot_training_results(model,history,epochs,filename):
     for i in range(len(history)):  
         acc.append(history[i].history['accuracy'])
         loss.append(history[i].history['loss'])
-
         epochs_range = range(epochs)
-       
         plt.subplot(len(history), 2, j)
         plt.title(subtitles[j-1],fontsize=10,pad=10)
         plt.plot(epochs_range, acc[i], label=f'Training Accuracy {i+1}')      

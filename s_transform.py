@@ -96,7 +96,7 @@ def s_transform(signal,gauss_width,range_from_harmonic,harmonic_list,sample_freq
         signal_reconstructed[int(fcenter/(grid_frequency*N*T))]=np.zeros(N,dtype='complex64')
         signal_reconstructed[int(fcenter/(grid_frequency*N*T))]+=np.fft.ifft(signal_fft_aux[int(fcenter/(N*T))])
         # Convert from 'complex64' to 'float32' to save memory and discard imaginary values (too small to be considered)
-        signal_reconstructed[int(fcenter/(grid_frequency*N*T))]=np.float32(signal_reconstructed[int(fcenter/(grid_frequency*N*T))])
+    #signal_reconstructed[int(fcenter/(grid_frequency*N*T))]=np.float32(signal_reconstructed[int(fcenter/(grid_frequency*N*T))])
         # Append frequency boundaries to generate gaussian graphs if needed 
         fstart_ind.append(fstart) 
         if fstart_neg==None:
@@ -107,7 +107,7 @@ def s_transform(signal,gauss_width,range_from_harmonic,harmonic_list,sample_freq
         fend_ind.append(fend)
         fend_ind.append(fend_neg)
     # For the remain of noise frequency spectrum, perform Inverse FFT to obtain noise signal approximation
-    noise=np.float32(np.fft.ifft(noise_fft))
+    noise=np.fft.ifft(noise_fft)
         
     return signal_reconstructed,noise,gauss_shifted,signal_fft_aux,fstart_ind,fend_ind
 

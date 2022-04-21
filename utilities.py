@@ -1,6 +1,7 @@
 import numpy as np
 import sys 
 import gc
+import re
 
 from steady_samples import generate_rms, get_indices
 
@@ -101,7 +102,7 @@ def find_peaks_rms(signal_rms,sample_frequency=30000,grid_frequency=60,factor=5,
     to give the peak magnitude
     
     'factor': integer number of resolution samples above and below width 
-    that will be summed to give neighbours magnitude 
+    that will be summed to give neighbors magnitude 
     """ 
     samples_per_cycle=sample_frequency/grid_frequency
     n = len(signal_rms)  
@@ -111,35 +112,65 @@ def find_peaks_rms(signal_rms,sample_frequency=30000,grid_frequency=60,factor=5,
         resolution=int(samples_per_cycle/2)
     else:
         resolution=int(number_of_samples)
-    # Range of samples above and below peak width
+    # Range of samples above and below target width
     limit=int(factor*resolution)
-    # Number of samples inside peak width
+    # Number of samples inside target width
     target_width=int(width*resolution)
     # List of peak indexes
     event_indexes=[]
-    # Number of samples from center of peak to limit value
+    # Number of samples from center of target to limit value
     i=int(limit+target_width/2)
     while i<int(n-(limit+target_width/2)):
-        # Sum all neighbour samples after peak width
+        # Sum all neighbor samples after target width
         superior_total=sum(signal_rms[int(i+target_width):int(i+target_width+limit):resolution])
-        # Sum all neighbour samples before peak width
+        # Sum all neighbor samples before target width
         inferior_total=sum(signal_rms[int(i-target_width-limit):int(i-target_width+1):resolution])
         if width>1:
-            # Sum all samples within peak width
+            # Sum all samples within target width
             target_total=sum(signal_rms[int(i-target_width/2):int(i+target_width/2+1):resolution])     
         else:
             target_total=signal_rms[int(i)]
+        # If sum of samples of target width are greater than its neighbors, it's considered a peak
         if target_total>inferior_total+superior_total:
+            # Discretize RMS signal inside target width to only return indexes at the center of cycles
             signal_rms[int(i-target_width/2):int(i+target_width/2+1):resolution]
-            event_indexes.append(np.argmax(signal_rms[int(i-target_width/2):int(i+target_width/2+1)], axis=0)+i-target_width/2)
+            # Add maximum value index inside target width to list of peak indexes
+            event_indexes.append(int(np.argmax(signal_rms[int(i-target_width/2):int(i+target_width/2+1)], axis=0)+i-target_width/2))
+            # Jump to next batch of samples outside limit
             i+=limit
         else:
+            # If not a peak, go to next batch of samples
             i+=resolution
     return event_indexes
+
+def acronym_maker(list_of_appliances):
+    for number,appliance in enumerate(list_of_appliances):
+        if re.search("[B|b]ulb",appliance)!=None:
+            list_of_appliances[number]="ILB"
+        elif re.search("[W|w]ashing",appliance)!=None:
+            list_of_appliances[number]="WM"
+        elif re.search("[A|a]ir",appliance)!=None:
+            list_of_appliances[number]="AC"
+        elif re.search("[F|f]ridge",appliance)!=None:
+            list_of_appliances[number]="Fridge"
+        elif re.search("[L|l]amp",appliance)!=None:
+            list_of_appliances[number]="FCL"
+        elif re.search("[W|w]ater",appliance)!=None:
+            list_of_appliances[number]="W. Kettle"
+        elif re.search("[C|c]offee",appliance)!=None:
+            print('YEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaa')
+            list_of_appliances[number]="Coffee M."
+        elif re.search("[I|i]ron",appliance)!=None:
+            list_of_appliances[number]="S. Iron"
+    
+    return list_of_appliances
+
 
 # Turn multidimensional lists into unidimensional list
 def flatten(list_to_be_flatten):
     return [item for sublist in list_to_be_flatten for item in sublist]
+
+
 
 
 

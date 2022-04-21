@@ -7,8 +7,10 @@ from tabulate import tabulate
 from six.moves import cPickle as pickle
 from tkinter import *
 
-from process_data import *
-from generate_graphs import *
+from process_data import metadata_submetered, metadata_aggregated, steady_samples_submetered,construct_harmonics_dict,construct_aggregated_dict,\
+    construct_s_matrix_signals,construct_residual_signals
+from generate_graphs import generate_graphs_submetered,generate_graphs_frequency_domain,generate_graphs_aggregated,\
+    generate_VI_images, generate_graphs_aggregated_with_event_detection
 from utilities import get_obj_size
 from cnn import cnn_main
 
@@ -24,7 +26,7 @@ residue_path = data_path + '/residue/'
 
 
 def main():
-    available_options=np.arange(1,14)
+    available_options=np.arange(1,15)
     print("\nChoose an option below: \n\
             \n(1) See appliances mapping of submetered data\
             \n(2) See appliances mapping of aggregated data\
@@ -37,10 +39,11 @@ def main():
             \n(8) Construct Convolutional Neural Network for V-I trajectories classification\
             \n\n############ EVENT DETECTION APPROACH ############\
             \n(9) Construct aggregated data dictionary\
-            \n(10) Construct S-Transform matrix dictionary of aggregated data\
-            \n(11) Construct residuals of power signals\
-            \n(12) Generate graphs of aggregated data\
-            \n(13) Exit\n")
+            \n(10) Generate graphs of aggregated data with instanteneous power\
+            \n(11) Construct S-Transform matrix dictionaries of power signals\
+            \n(12) Construct residuals of power signals\
+            \n(13) Generate graphs of events detected by residual of power signals\
+            \n(14) Exit\n")
     while True:
         x = int(input("Option: "))
         if x in available_options:
@@ -163,6 +166,16 @@ def main():
         main()
 
     if x==10:
+        # Generate graphs from aggregated data with instateneous power signal
+        start_time = time.time()
+        with open(data_path + 'aggregated_dict.pkl', "rb") as f:
+            aggregated_dict = pickle.load(f)        
+        print("\nSaving images...")
+        generate_graphs_aggregated(aggregated_dict)
+        print(f"\nExecution Time: {time.time() - start_time} seconds")
+        main()
+
+    if x==11:
         # Construct S matrix of of power signals as of voltage and current from aggregated data  (each row of matrix are one harmonic component)
         start_time = time.time()  
         data_dict=metadata_aggregated(metadata_aggregated_path)
@@ -174,7 +187,7 @@ def main():
         print(f"\nExecution Time: {int(time.time() - start_time)} seconds\n")
         main()
 
-    if x==11:
+    if x==12:
         # Construct residuals of power signals as of voltage and current from aggregated data 
         start_time = time.time()
         data_dict=metadata_aggregated(metadata_aggregated_path)
@@ -183,17 +196,17 @@ def main():
         print(f"\nExecution Time: {int(time.time() - start_time)} seconds\n")
         main()
 
-    if x==12:
-        # Generate graphs from aggregated data 
+    if x==13:
+        # Generate graphs from aggregated data with instateneous power signal
         start_time = time.time()
-        with open("Metadata/aggregated_dict.pkl", "rb") as f:
-            aggregated_dict = pickle.load(f)         
+        with open(data_path + 'aggregated_dict.pkl', "rb") as f:
+            aggregated_dict = pickle.load(f)        
         print("\nSaving images...")
-        generate_graphs_aggregated(aggregated_dict)
+        generate_graphs_aggregated_with_event_detection(aggregated_dict,residue_path)
         print(f"\nExecution Time: {time.time() - start_time} seconds")
         main()
-        
-    if x==13:
+
+    if x==14:
         exit()
 
 

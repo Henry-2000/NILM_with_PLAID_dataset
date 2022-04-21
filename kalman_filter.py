@@ -1,10 +1,5 @@
 import numpy as np
 
-from steady_samples import signal_is_steady_state
-from harmonics import filter_harmonics
-from utilities import count_progress
-
-
 # Execute EKF implementation for transients detection 
 def KF_implementation(signal,zero_frequency_signal=None,harmonic_list=None,sample_frequency=30000,grid_frequency=60):
     # Samples per signal cycle
@@ -45,7 +40,7 @@ def KF_implementation(signal,zero_frequency_signal=None,harmonic_list=None,sampl
     # Auxiliar identity matrix
     I=np.identity(dim)
     # Construct State Vector (Priori)
-    X_k_est_prior=np.zeros((dim,1))
+    X_k_est_prior=np.zeros((dim,1),dtype='complex_')
     # Inicialize Residual Vector
     residual=[]
     # Set smooth constant
@@ -69,8 +64,6 @@ def KF_implementation(signal,zero_frequency_signal=None,harmonic_list=None,sampl
         
         PCE_posteriori_plus= (I - Kg @ H_matrix) @ PCE_posteriori
         
-    
-        
         Sk= H_matrix  @ PCE_posteriori_plus @ H_matrix.T + Rk
         
         qk = alfa*qk + (1-alfa)*np.abs((residual[k]**2 -Sk) @ np.linalg.pinv(H_matrix @ H_matrix.T)) 
@@ -81,10 +74,6 @@ def KF_implementation(signal,zero_frequency_signal=None,harmonic_list=None,sampl
 
         PCE_priori = PCE_posteriori_plus
 
-
-    residual=np.array(residual,dtype=float)
-      
-    
     residual=np.reshape(residual,(-1))
       
     return residual

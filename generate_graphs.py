@@ -1,16 +1,18 @@
 import os
 from os.path import join
+import pandas as pd
 import json
 import numpy as np
 from cycler import cycler
 from tkinter import *
+from six.moves import cPickle as pickle
 
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import FormatStrFormatter
 
 from steady_samples import generate_rms
-from utilities import shift_phase, count_progress
+from utilities import shift_phase, count_progress, find_peaks_rms, acronym_maker
 from harmonics import filter_harmonics, harmonics_selection
 
 # File paths for saving images
@@ -153,10 +155,10 @@ def generate_graphs_submetered(signal_dict_original,target_appliances=[],filepat
     print(f"Graphs saved in '{filepath}'\n")
 
 def generate_graphs_aggregated(aggregated_dict_original,target_samples=[],filepath=filepath_aggregated,sample_frequency=30000):
-
     dt=1/sample_frequency
     count=0
     aggregated_dict={}
+    subtitles_list=['(a)','(b)','(c)']
 
     if target_samples!=[]:
         for target in target_samples:
@@ -164,53 +166,287 @@ def generate_graphs_aggregated(aggregated_dict_original,target_samples=[],filepa
     else:
         aggregated_dict=aggregated_dict_original
     n_samples=len(aggregated_dict)
-    for sample in aggregated_dict:    
+    for file_number in aggregated_dict:    
         count_progress(n_samples,count)   
-        current=aggregated_dict[sample]['current']
-        voltage=aggregated_dict[sample]['voltage']
-        appliances=aggregated_dict[sample]['appliances']
-        appliances_names=appliances[0]
-        for i in range(1,len(appliances)):
-            appliances_names+=f" + {appliances[i]}"
-            
-        current_rms=generate_rms(current)
-        voltage_rms=generate_rms(voltage)
+        current=aggregated_dict[file_number]['current']
+        voltage=aggregated_dict[file_number]['voltage']
+        power=current*voltage
+        appliances=aggregated_dict[file_number]['appliances']
+        appliance_list=[]
+        on_events=[]
+        off_events=[]
+        for appliance_name in appliances:
+            appliance_list.append(appliance_name)
+            on_events.extend(appliances[appliance_name]['on'])
+            off_events.extend(appliances[appliance_name]['off'])
+        appliances_string=""
+        if len(appliance_list)==2:
+            appliances_string+=f"{appliance_list[0]} and {appliance_list[1]}"
+        else:
+            for i in range(len(appliance_list)-2):
+                appliances_string+=f"{appliance_list[i]}, "
+            appliances_string+=f"{appliance_list[-2]} and {appliance_list[-1]}"
+        current_rms=generate_rms(current,mode='full_cycle')
+        voltage_rms=generate_rms(voltage,mode='full_cycle')
+        power_rms=generate_rms(power,mode='full_cycle')
 
-        fig1,axes1 = plt.subplots(2,1)
+        fig1,axes1 = plt.subplots(3,1)
         fig1 = plt.gcf()
         fig1.set_size_inches(20, 10)
         fig1.tight_layout(pad=5.0)
 
         duration=len(current)/sample_frequency
         time= np.linspace(0,duration,num=int(np.ceil(duration/dt)))
+
+        plt.suptitle(f'File {file_number} - Appliances involved: {appliances_string}',fontsize=20)
         
         plt.grid()
         plt.sca(axes1[0])
-        plt.title(f'{appliances_names} - Sample {sample}',fontsize=20,pad=15)
+        plt.title(f'{subtitles_list[0]}',fontsize=14,pad=15)
         axes1[0].plot(time,current,'b',label='Current')
         axes1[0].plot(time,current_rms,'r',label='Current RMS')
+        trans = axes1[0].get_xaxis_transform()
         plt.xlabel('Time [s]')
         plt.ylabel('Current [A]')
         plt.xticks(np.arange(0, max(time)+1000*dt,np.around(max(time),1)/20))
         plt.xlim(0,max(time))
+        for appliance_name in appliance_list:
+            for event in appliances[appliance_name]['on']:
+                plt.axvline(time[event],0,1,color='g')
+                plt.text(time[event], .1, f'{appliance_name} ON',rotation='vertical',transform=trans,color='g',fontsize=10,weight='bold')
+            for event in appliances[appliance_name]['off']:
+                plt.axvline(time[event],0,1,color='r')
+                plt.text(time[event], .1, f'{appliance_name} OFF',rotation='vertical',transform=trans,color='r',fontsize=10,weight='bold')
         axes1[0].legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left', ncol=1, borderaxespad=0.)
                
         plt.grid()
         plt.sca(axes1[1])
-        plt.title(f'{appliances_names} - Sample {sample}',fontsize=20,pad=15)
+        plt.title(f'{subtitles_list[1]}',fontsize=14,pad=15)
         axes1[1].plot(time,voltage,'b',label=f'Voltage')
         axes1[1].plot(time,voltage_rms,'r',label=f'Voltage RMS')
+        trans = axes1[1].get_xaxis_transform()
         plt.xlabel('Time [s]')
         plt.ylabel('Voltage [V]')
         plt.xticks(np.arange(0, max(time)+1000*dt,np.around(max(time),1)/20))
         plt.xlim(0,max(time))
+        for appliance_name in appliance_list:
+            for event in appliances[appliance_name]['on']:
+                plt.axvline(time[event],0,1,color='g')
+                plt.text(time[event], .1, f'{appliance_name} ON',rotation='vertical',transform=trans,color='g',fontsize=10,weight='bold')
+            for event in appliances[appliance_name]['off']:
+                plt.axvline(time[event],0,1,color='r')
+                plt.text(time[event], .1, f'{appliance_name} OFF',rotation='vertical',transform=trans,color='r',fontsize=10,weight='bold')
         axes1[1].legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left', ncol=1, borderaxespad=0.)
+
+        plt.grid()
+        plt.sca(axes1[2])
+        plt.title(f'{subtitles_list[2]}',fontsize=14,pad=15)
+        axes1[2].plot(time,power,'b',label=f'Instantaneous Power')
+        axes1[2].plot(time,power_rms,'r',label=f'Instantaneous Power RMS')
+        trans = axes1[2].get_xaxis_transform()
+        plt.xlabel('Time [s]')
+        plt.ylabel('Power [W]')
+        plt.xticks(np.arange(0, max(time)+1000*dt,np.around(max(time),1)/20))
+        plt.xlim(0,max(time))
+        for appliance_name in appliance_list:
+            for event in appliances[appliance_name]['on']:
+                plt.axvline(time[event],0,1,color='g')
+                plt.text(time[event], .1, f'{appliance_name} ON',rotation='vertical',transform=trans,color='g',fontsize=10,weight='bold')
+            for event in appliances[appliance_name]['off']:
+                plt.axvline(time[event],0,1,color='r')
+                plt.text(time[event], .1, f'{appliance_name} OFF',rotation='vertical',transform=trans,color='r',fontsize=10,weight='bold')
+        axes1[2].legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left', ncol=1, borderaxespad=0.)
 
         plt.tight_layout()
 
-        if not os.path.exists(f"{filepath}"):
-            os.makedirs(f"{filepath}")
-        plt.savefig(f"{filepath}/{sample}.png") 
+        if not os.path.exists(f"{filepath}/aggregated_signals"):
+            os.makedirs(f"{filepath}/aggregated_signals")
+        plt.savefig(f"{filepath}/aggregated_signals/file {file_number}.png") 
+        plt.close(fig1)
+        count+=1
+
+def generate_graphs_aggregated_with_event_detection(aggregated_dict_original,residue_path,target_samples=[],filepath=filepath_aggregated,sample_frequency=30000,grid_frequency=60):
+    dt=1/sample_frequency
+    count=0
+    aggregated_dict={}
+    time_range=5000
+    factor=11
+    width=3
+    subtitles_list=['(a)','(b)','(c)','(d)','(e)','(f)','(g)','(h)','(i)','(j)','(k)','(l)','(m)','(n)','(o)','(p)','(q)','(r)','(s)','(t)','(u)']
+
+    if target_samples!=[]:
+        for target in target_samples:
+            aggregated_dict[target]=aggregated_dict_original[target]
+    else:
+        aggregated_dict=aggregated_dict_original
+    n_samples=len(aggregated_dict)
+    for file_number in aggregated_dict:    
+        count_progress(n_samples,count)   
+        current=aggregated_dict[file_number]['current']
+        voltage=aggregated_dict[file_number]['voltage']
+        power=current*voltage
+        duration=len(current)/sample_frequency
+        time= np.linspace(0,duration,num=int(np.ceil(duration/dt)))
+
+        with open(f"{residue_path}residual_power_file{file_number}.pkl", 'rb') as f: 
+            residue=pickle.load(f)
+        residue_rms=generate_rms(residue,mode='half_cycle')
+
+        appliances=aggregated_dict[file_number]['appliances']
+        appliance_list=[]
+        # Defining dataset events
+        on_events=[]
+        off_events=[]
+        for appliance_name in appliances:
+            appliance_list.append(appliance_name)
+            on_events.extend(appliances[appliance_name]['on'])
+            off_events.extend(appliances[appliance_name]['off'])
+        #appliance_list=acronym_maker(appliance_list)
+        dataset_events=on_events+off_events
+        # Defining events detected by algorithm
+        detected_events=find_peaks_rms(residue_rms,mode='half_cycle',factor=factor,width=width)
+        
+        appliances_string=""
+        if len(appliance_list)==2:
+            appliances_string+=f"{appliance_list[0]} and {appliance_list[1]}"
+        else:
+            for i in range(len(appliance_list)-2):
+                appliances_string+=f"{appliance_list[i]}, "
+            appliances_string+=f"{appliance_list[-2]} and {appliance_list[-1]}"
+
+        fig1 = plt.figure(constrained_layout=True)
+        gs = GridSpec(len(dataset_events)+1, 2, figure=fig1)
+        fig1 = plt.gcf()
+        fig1.set_size_inches(17, 17)
+        xlabel='Time [s]'
+        ylabel='Power [W]'
+        font=12
+
+        plt.suptitle(f'File {file_number} - Appliances involved: {appliances_string}',fontsize=20)
+        
+        
+        axes1 = fig1.add_subplot(gs[0, :])
+        plt.title(f'{subtitles_list[0]}',fontsize=14,pad=15)
+        plt.plot(time,power,'b',label=f'Instantaneous Power')
+        #trans = axes1.get_xaxis_transform()
+        plt.xlabel(xlabel,labelpad=5,fontsize=font)
+        plt.ylabel(ylabel,labelpad=5,fontsize=font)
+        plt.yticks(fontsize=font)
+        plt.xticks(np.arange(0, max(time)+1000*dt,np.around(max(time),1)/20),fontsize=font)
+        plt.xlim(0,max(time))
+        for appliance_name in appliance_list:
+            for event in appliances[appliance_name]['on']:
+                appliance_display=acronym_maker([appliance_name])[0]
+                print('applia_d======',appliance_display)
+                plt.axvline(time[event],0,1,color='g')
+                plt.text(time[event], .2, f'{appliance_display} ON',rotation='vertical',color='g',fontsize=12,weight='bold')
+            for event in appliances[appliance_name]['off']:
+                appliance_display=acronym_maker([appliance_name])[0]
+                print(appliance_display)
+                plt.axvline(time[event],0,1,color='r')
+                plt.text(time[event], .2, f'{appliance_display} OFF',rotation='vertical',color='r',fontsize=12,weight='bold')   
+        for i in range(len(detected_events)): 
+            if i==0:        
+                plt.axvline(time[detected_events[i]],0,1,color='m',label='Events detected by algorithm')
+            else:
+                plt.axvline(time[detected_events[i]],0,1,color='m')
+        axes1.legend(fontsize=10)
+        plt.grid()
+
+        ctrl1=1
+        ctrl2=1
+        for appliance_name in appliance_list:
+            for event in appliances[appliance_name]['on']:
+                appliance_display=acronym_maker([appliance_name])[0]
+                axes1 = fig1.add_subplot(gs[ctrl1, 0])
+                plt.title(subtitles_list[ctrl2],fontsize=14,pad=15)
+                plt.plot(time[event-time_range:event+time_range],power[event-time_range:event+time_range],label='Instantaneous Power')
+                #plt.plot(time[ind-time_range:ind+time_range],aux_signal[ind-time_range:ind+time_range],color='r')
+                plt.axvline(time[event],0,1,color='g',label="ON event according to dataset's metadata")
+                plt.text(time[event], .2, f'{appliance_display} ON',rotation='vertical',color='g',fontsize=12,weight='bold')
+                for event_detected in detected_events:
+                    if event_detected>=event-time_range and event_detected<=event+time_range:
+                        plt.axvline(time[event_detected],0,1,color='m',label='Event detected by algorithm')
+                #plt.axvline(time[calculated_indices[count-1]],0,1,color='r')
+                plt.xticks(fontsize=font)
+                plt.yticks(fontsize=font)
+                plt.xlabel(xlabel,labelpad=5,fontsize=font)
+                plt.ylabel(ylabel,labelpad=5,fontsize=font)
+                axes1.legend(fontsize=10)
+                plt.ylim(-10,1.05*max(power[event-time_range:event+time_range]))
+                #plt.legend(ncol=len(signals_to_plot), loc="lower left")
+                plt.grid()
+                
+                ctrl2+=1
+                axes1 = fig1.add_subplot(gs[ctrl1, 1])
+                plt.title(subtitles_list[ctrl2],fontsize=14,pad=15)
+                plt.plot(time[event-time_range:event+time_range],np.real(residue_rms[event-time_range:event+time_range]),'c',label='Residue Power')
+                #plt.plot(time[event-time_range:event+time_range],aux_signal[event-time_range:event+time_range],color='r')
+                plt.axvline(time[event],0,1,color='g',label="ON event according to dataset's metadata")
+                plt.text(time[event], .2, f'{appliance_display} ON',rotation='vertical',color='g',fontsize=12,weight='bold')
+                for event_detected in detected_events:
+                    if event_detected>=event-time_range and event_detected<=event+time_range:
+                        plt.axvline(time[event_detected],0,1,color='m',label='Event detected by algorithm')
+                #plt.axvline(time[calculated_indices[count-1]],0,1,color='r')
+                plt.xticks(fontsize=font)
+                plt.yticks(fontsize=font)   
+                plt.xlabel(xlabel,labelpad=5,fontsize=font)
+                #plt.text(event/30000+0.08,0.7*max(residual_power_rms[event-time_range:event+time_range]),f'Instante dataset: {round(event/30000,3)} s', fontsize = 10)
+                #plt.text(event/30000+0.08,0.5*max(residual_power_rms[event-time_range:event+time_range]),f'Instante calculado: {round(calculated_indices[count-1]/30000,3)} s', fontsize = 10)
+                axes1.legend(fontsize=10)
+                plt.ylim(0,1.05*max(np.real(residue_rms[event-time_range:event+time_range])))
+                plt.grid()
+                ctrl1+=1
+                ctrl2+=1
+
+            for event in appliances[appliance_name]['off']:
+                appliance_display=acronym_maker([appliance_name])[0]
+                axes1 = fig1.add_subplot(gs[ctrl1, 0])
+                plt.title(subtitles_list[ctrl2],fontsize=14,pad=10)
+                plt.plot(time[event-time_range:event+time_range],power[event-time_range:event+time_range],label='Instantaneous Power')
+                #plt.plot(time[ind-time_range:ind+time_range],aux_signal[ind-time_range:ind+time_range],color='r')
+                
+                plt.axvline(time[event],0,1,color='r',label="OFF event according to dataset's metadata")
+                plt.text(time[event], .2, f'{appliance_display} OFF',rotation='vertical',color='r',fontsize=12,weight='bold') 
+                for event_detected in detected_events:
+                    if event_detected>=event-time_range and event_detected<=event+time_range:
+                        plt.axvline(time[event_detected],0,1,color='m',label='Event detected by algorithm')
+                #plt.axvline(time[calculated_indices[count-1]],0,1,color='r')
+                plt.xticks(fontsize=font)
+                plt.yticks(fontsize=font)
+                plt.xlabel(xlabel,labelpad=5,fontsize=font)
+                plt.ylabel(ylabel,labelpad=5,fontsize=font)
+                axes1.legend(fontsize=10)
+                plt.ylim(-10,1.05*max(power[event-time_range:event+time_range]))
+                #plt.legend(ncol=len(signals_to_plot), loc="lower left")
+                plt.grid()
+                
+                ctrl2+=1
+                axes1 = fig1.add_subplot(gs[ctrl1, 1])
+                plt.title(subtitles_list[ctrl2],fontsize=14,pad=10)
+                plt.plot(time[event-time_range:event+time_range],np.real(residue_rms[event-time_range:event+time_range]),'c',label='Residue Power')
+                #plt.plot(time[event-time_range:event+time_range],aux_signal[event-time_range:event+time_range],color='r')
+                plt.axvline(time[event],0,1,color='r',label="OFF event according to dataset's metadata")
+                plt.text(time[event], .2, f'{appliance_display} OFF',rotation='vertical',color='r',fontsize=12,weight='bold') 
+                for event_detected in detected_events:
+                    if event_detected>=event-time_range and event_detected<=event+time_range:
+                        plt.axvline(time[event_detected],0,1,color='m',label='Event detected by algorithm')
+                #plt.axvline(time[calculated_indices[count-1]],0,1,color='r')
+                plt.xticks(fontsize=font)
+                plt.yticks(fontsize=font)   
+                plt.xlabel(xlabel,labelpad=5,fontsize=font)
+                #plt.text(event/30000+0.08,0.7*max(residual_power_rms[event-time_range:event+time_range]),f'Instante dataset: {round(event/30000,3)} s', fontsize = 10)
+                #plt.text(event/30000+0.08,0.5*max(residual_power_rms[event-time_range:event+time_range]),f'Instante calculado: {round(calculated_indices[count-1]/30000,3)} s', fontsize = 10)
+                axes1.legend(fontsize=10)
+                plt.ylim(0,1.05*max(np.real(residue_rms[event-time_range:event+time_range])))
+                plt.grid()
+                ctrl1+=1
+                ctrl2+=1
+            
+
+        if not os.path.exists(f"{filepath}/aggregated_signals_with_event_detection/file_{file_number}"):
+            os.makedirs(f"{filepath}/aggregated_signals_with_event_detection/file_{file_number}")
+        plt.savefig(f"{filepath}/aggregated_signals_with_event_detection//file_{file_number}/file{file_number}_with_residue.png") 
         plt.close(fig1)
         count+=1
 
@@ -369,8 +605,6 @@ def generate_VI_images_4x4(harmonic_dict,signal_dict,target_appliances=target_ap
             resistive_type.append(appliance_type)
             max_current.append(harmonic_dict[appliance_type]['max_current'])
     imax=max(max_current)
-    print(imax)
-    print(low_THD_appliance_type)
     highest_odd_harmonic_order=21
     for appliance_type in harmonic_dict:          
         for appliance_name in harmonic_dict[appliance_type]['appliance']:
@@ -380,15 +614,12 @@ def generate_VI_images_4x4(harmonic_dict,signal_dict,target_appliances=target_ap
                 voltage_har=harmonic_dict[appliance_type]['appliance'][appliance_name]['harmonic_order'][1]['voltage'] 
                 
                 current_har=np.zeros(len(harmonic_dict[appliance_type]['appliance'][appliance_name]['harmonic_order'][1]['current']))
-                    
                         
                 for i in range(1,highest_odd_harmonic_order+1,1):
                     harmonic=harmonic_dict[appliance_type]['appliance'][appliance_name]['harmonic_order'][i]['current']
                     current_har+=harmonic
 
                 current_har,voltage_har,phase=shift_phase(current_har,voltage_har,harmonic_dict[appliance_type]['mean_lag'])
-
-                
                 
                 current_harmonics.append(current_har)
 
@@ -399,8 +630,6 @@ def generate_VI_images_4x4(harmonic_dict,signal_dict,target_appliances=target_ap
                 voltage_dict=signal_dict[appliance_name]['voltage'][indices[0]:indices[1]]
                 current_original.append(current_dict)
                 voltage_original.append(voltage_dict)
-
-                
     
     count=0
     fig1,axes1 = plt.subplots(4,4,figsize=(8,8))
@@ -416,14 +645,12 @@ def generate_VI_images_4x4(harmonic_dict,signal_dict,target_appliances=target_ap
             plt.ylabel('Corrente [A]',fontsize=7)
             plt.xticks(fontsize=6)
             plt.yticks(fontsize=6)           
-            print('hey ya')
             count+=1
-    if not os.path.exists(plaid_path + f"{filepath}"):
-        os.makedirs(plaid_path + f"{filepath}")
+    if not os.path.exists(f"{filepath}"):
+        os.makedirs(f"{filepath}")
     plt.tight_layout()
-    plt.savefig(plaid_path + f"{filepath}/Original Signal Trajectories - VI.png") 
+    plt.savefig(f"{filepath}/Original Signal Trajectories - VI.png") 
     plt.close(fig1)
-    print('damn')
     count=0
     fig2,axes2 = plt.subplots(4,4,figsize=(8,8))
     fig2 = plt.figure(frameon = False)
@@ -439,14 +666,14 @@ def generate_VI_images_4x4(harmonic_dict,signal_dict,target_appliances=target_ap
             plt.xticks(fontsize=6)
             plt.yticks(fontsize=6)
             for appliance_type in harmonic_dict:
-                if appliance_type in low_THD_appliance_type:
+                if appliance_type in resistive_type:
                     if appliance_list[count] in harmonic_dict[appliance_type]['appliance']:
                         plt.ylim(-imax,imax)    
             count+=1
-    if not os.path.exists(plaid_path + f"{filepath}"):
-        os.makedirs(plaid_path + f"{filepath}")
+    if not os.path.exists(f"{filepath}"):
+        os.makedirs(f"{filepath}")
     plt.tight_layout()
-    plt.savefig(plaid_path + f"{filepath}/Filtered Trajectories - VI.png") 
+    plt.savefig(f"{filepath}/Filtered Trajectories - VI.png") 
     plt.close(fig2)
 
 

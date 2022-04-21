@@ -95,7 +95,7 @@ def harmonics_selection(harmonic_dict,highest_odd_harmonic_order,appliance_type,
 
     return current,voltage
 
-    
+# Select harmonic components based on magnitude at frequency domain
 def select_significant_harmonics(signal_fft,rank_size=10,sample_frequency=30000,grid_frequency=60):
     N = len(signal_fft)       
     T=1/sample_frequency
