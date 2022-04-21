@@ -3,7 +3,7 @@ In this repository are available codes for implementation of electrical loads cl
 
 PLAID dataset is available in [here](https://figshare.com/articles/dataset/PLAID_-_A_Voltage_and_Current_Measurement_Dataset_for_Plug_Load_Appliance_Identification_in_Households/10084619/2) (access date: 21 Mar 2022). Only needs submetered/aggregated and metadata files. Extract/save them on the same folder directory of codes.
 
-Related work: (to be uploaded)
+Related work: https://repositorio.ifes.edu.br/bitstream/handle/123456789/1886/TCC_Rede_Neural_Convolucional_Cargas_Filtro.pdf?sequence=1&isAllowed=y (in portuguese)
 
 Files content:
 * [main.py](https://github.com/hsneto/iftex/blob/master/textuais/testes.tex#L10) - code that displays the sequence of options for data processing and graphs generation;
