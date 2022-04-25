@@ -158,7 +158,6 @@ def acronym_maker(list_of_appliances):
         elif re.search("[W|w]ater",appliance)!=None:
             list_of_appliances[number]="W. Kettle"
         elif re.search("[C|c]offee",appliance)!=None:
-            print('YEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaa')
             list_of_appliances[number]="Coffee M."
         elif re.search("[I|i]ron",appliance)!=None:
             list_of_appliances[number]="S. Iron"
