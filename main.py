@@ -41,8 +41,8 @@ def main():
             \n(9) Construct aggregated data dictionary\
             \n(10) Generate graphs of aggregated data with instanteneous power\
             \n(11) Construct S-Transform matrix dictionaries of power signals\
-            \n(12) Construct residuals of power signals\
-            \n(13) Generate graphs of events detected by residual of power signals\
+            \n(12) Construct residual power signals\
+            \n(13) Generate graphs of events detected by residual power signals\
             \n(14) Exit\n")
     while True:
         x = int(input("Option: "))
