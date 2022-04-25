@@ -446,12 +446,12 @@ def generate_graphs_aggregated_with_event_detection(aggregated_dict_original,res
         # Dataframes of events
         dataset_events_df=pd.DataFrame()
         dataset_events_df["Dataset's event indices"]=sorted([int(dataset_events[i]) for i in range(len(dataset_events))])
-        dataset_events_df["Time (s)"]=[round(dataset_events[i]/sample_frequency,3) for i in range(len(dataset_events))]
+        dataset_events_df["Time (s)"]=sorted([round(dataset_events[i]/sample_frequency,3) for i in range(len(dataset_events))])
         dataset_events_df["Dataset's event indices"] = dataset_events_df["Dataset's event indices"].astype(str).apply(lambda x: x.replace('.0',''))
         
         detected_events_df=pd.DataFrame()
         detected_events_df["Detected event indices"]=sorted([int(detected_events[i]) for i in range(len(detected_events))])
-        detected_events_df["Time (s)"]=[round(detected_events[i]/sample_frequency,3) for i in range(len(detected_events))]
+        detected_events_df["Time (s)"]=sorted([round(detected_events[i]/sample_frequency,3) for i in range(len(detected_events))])
         detected_events_df["Detected event indices"] = detected_events_df["Detected event indices"].astype(str).apply(lambda x: x.replace('.0',''))
            
         fig2 = plt.figure(constrained_layout=True)
@@ -463,9 +463,10 @@ def generate_graphs_aggregated_with_event_detection(aggregated_dict_original,res
         plt.table(cellText=dataset_events_df.values, colLabels=dataset_events_df.keys(), loc='center')
         plt.axis('off')
 
-        fig2.add_subplot(gs2[0, 1])
-        plt.table(cellText=detected_events_df.values, colLabels=detected_events_df.keys(), loc='center')
-        plt.axis('off')
+        if detected_events!=[]:
+            fig2.add_subplot(gs2[0, 1])
+            plt.table(cellText=detected_events_df.values, colLabels=detected_events_df.keys(), loc='center')
+            plt.axis('off')
 
         plt.savefig(f"{filepath}/aggregated_signals_with_event_detection//file_{file_number}/file{file_number}_events_summary.png") 
         plt.close(fig2)
