@@ -301,11 +301,10 @@ def generate_graphs_aggregated_with_event_detection(aggregated_dict_original,res
             appliance_list.append(appliance_name)
             on_events.extend(appliances[appliance_name]['on'])
             off_events.extend(appliances[appliance_name]['off'])
-        #appliance_list=acronym_maker(appliance_list)
         dataset_events=on_events+off_events
         # Defining events detected by algorithm
         detected_events=find_peaks_rms(residue_rms,mode='half_cycle',factor=factor,width=width)
-        
+
         appliances_string=""
         if len(appliance_list)==2:
             appliances_string+=f"{appliance_list[0]} and {appliance_list[1]}"
@@ -324,7 +323,6 @@ def generate_graphs_aggregated_with_event_detection(aggregated_dict_original,res
 
         plt.suptitle(f'File {file_number} - Appliances involved: {appliances_string}',fontsize=20)
         
-        
         axes1 = fig1.add_subplot(gs[0, :])
         plt.title(f'{subtitles_list[0]}',fontsize=14,pad=15)
         plt.plot(time,power,'b',label=f'Instantaneous Power')
@@ -337,12 +335,10 @@ def generate_graphs_aggregated_with_event_detection(aggregated_dict_original,res
         for appliance_name in appliance_list:
             for event in appliances[appliance_name]['on']:
                 appliance_display=acronym_maker([appliance_name])[0]
-                print('applia_d======',appliance_display)
                 plt.axvline(time[event],0,1,color='g')
                 plt.text(time[event], .2, f'{appliance_display} ON',rotation='vertical',color='g',fontsize=12,weight='bold')
             for event in appliances[appliance_name]['off']:
                 appliance_display=acronym_maker([appliance_name])[0]
-                print(appliance_display)
                 plt.axvline(time[event],0,1,color='r')
                 plt.text(time[event], .2, f'{appliance_display} OFF',rotation='vertical',color='r',fontsize=12,weight='bold')   
         for i in range(len(detected_events)): 
@@ -380,7 +376,7 @@ def generate_graphs_aggregated_with_event_detection(aggregated_dict_original,res
                 ctrl2+=1
                 axes1 = fig1.add_subplot(gs[ctrl1, 1])
                 plt.title(subtitles_list[ctrl2],fontsize=14,pad=15)
-                plt.plot(time[event-time_range:event+time_range],np.real(residue_rms[event-time_range:event+time_range]),'c',label='Residue Power')
+                plt.plot(time[event-time_range:event+time_range],np.real(residue_rms[event-time_range:event+time_range]),'c',label='Residual Power RMS')
                 #plt.plot(time[event-time_range:event+time_range],aux_signal[event-time_range:event+time_range],color='r')
                 plt.axvline(time[event],0,1,color='g',label="ON event according to dataset's metadata")
                 plt.text(time[event], .2, f'{appliance_display} ON',rotation='vertical',color='g',fontsize=12,weight='bold')
@@ -424,7 +420,7 @@ def generate_graphs_aggregated_with_event_detection(aggregated_dict_original,res
                 ctrl2+=1
                 axes1 = fig1.add_subplot(gs[ctrl1, 1])
                 plt.title(subtitles_list[ctrl2],fontsize=14,pad=10)
-                plt.plot(time[event-time_range:event+time_range],np.real(residue_rms[event-time_range:event+time_range]),'c',label='Residue Power')
+                plt.plot(time[event-time_range:event+time_range],np.real(residue_rms[event-time_range:event+time_range]),'c',label='Residual Power RMS')
                 #plt.plot(time[event-time_range:event+time_range],aux_signal[event-time_range:event+time_range],color='r')
                 plt.axvline(time[event],0,1,color='r',label="OFF event according to dataset's metadata")
                 plt.text(time[event], .2, f'{appliance_display} OFF',rotation='vertical',color='r',fontsize=12,weight='bold') 
@@ -442,12 +438,38 @@ def generate_graphs_aggregated_with_event_detection(aggregated_dict_original,res
                 plt.grid()
                 ctrl1+=1
                 ctrl2+=1
-            
-
         if not os.path.exists(f"{filepath}/aggregated_signals_with_event_detection/file_{file_number}"):
             os.makedirs(f"{filepath}/aggregated_signals_with_event_detection/file_{file_number}")
         plt.savefig(f"{filepath}/aggregated_signals_with_event_detection//file_{file_number}/file{file_number}_with_residue.png") 
         plt.close(fig1)
+
+        # Dataframes of events
+        dataset_events_df=pd.DataFrame()
+        dataset_events_df["Dataset's event indices"]=sorted([int(dataset_events[i]) for i in range(len(dataset_events))])
+        dataset_events_df["Time (s)"]=[round(dataset_events[i]/sample_frequency,3) for i in range(len(dataset_events))]
+        dataset_events_df["Dataset's event indices"] = dataset_events_df["Dataset's event indices"].astype(str).apply(lambda x: x.replace('.0',''))
+        
+        detected_events_df=pd.DataFrame()
+        detected_events_df["Detected event indices"]=sorted([int(detected_events[i]) for i in range(len(detected_events))])
+        detected_events_df["Time (s)"]=[round(detected_events[i]/sample_frequency,3) for i in range(len(detected_events))]
+        detected_events_df["Detected event indices"] = detected_events_df["Detected event indices"].astype(str).apply(lambda x: x.replace('.0',''))
+           
+        fig2 = plt.figure(constrained_layout=True)
+        gs2 = GridSpec(1, 2, figure=fig2)
+        fig2 = plt.gcf()
+        fig2.set_size_inches(8, 8)
+        
+        fig2.add_subplot(gs2[0, 0])
+        plt.table(cellText=dataset_events_df.values, colLabels=dataset_events_df.keys(), loc='center')
+        plt.axis('off')
+
+        fig2.add_subplot(gs2[0, 1])
+        plt.table(cellText=detected_events_df.values, colLabels=detected_events_df.keys(), loc='center')
+        plt.axis('off')
+
+        plt.savefig(f"{filepath}/aggregated_signals_with_event_detection//file_{file_number}/file{file_number}_events_summary.png") 
+        plt.close(fig2)
+
         count+=1
 
 
